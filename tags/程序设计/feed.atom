@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title type="text">Recent Blog Posts</title>
+  <id>http://www.pywave.com/feed.atom</id>
+  <updated>2013-02-03T00:00:00Z</updated>
+  <link href="http://www.pywave.com/" />
+  <link href="http://www.pywave.com/feed.atom" rel="self" />
+  <subtitle type="text">Recent blog posts</subtitle>
+  <generator>Werkzeug</generator>
+  <entry xml:base="http://www.pywave.com/feed.atom">
+    <title type="text">Hello Modularity</title>
+    <id>http://www.pywave.com/2012/07/23/hello-modularity</id>
+    <updated>2012-07-23T00:00:00Z</updated>
+    <link href="http://www.pywave.com/2012/07/23/hello-modularity" />
+    <author>
+      <name>Jason Lai</name>
+    </author>
+    <content type="html">&lt;p&gt;现代的程序设计是越来越复杂，为了掌控其中不断增长的复杂度，以及可能随时到来的需求变化，模块化设
+计是最重要的手段之一。学习编程以来，对模块化的理解随着知识经验的增加而不断变化。到现在，恍然意
+识到，人类社会的每一个重大进步和发展无不是 &lt;strong&gt;站在巨人的肩膀上&lt;/strong&gt; ，雄伟的金字塔由众多规格统一的石
+头砌成，现代的集成电路基于基本的逻辑门和触发器，大规模的程序实现离不开结构化程序设计以及各式
+功能模块支持。大道至简，模块化的思想并不局限于程序设计，是如此简单，也是如此繁复。&lt;/p&gt;
+&lt;p&gt;每当程序复杂度增长到一定程度时，总能感悟到模块化编程的重要性，在 The Art of Unix Programming
+中对于模块化有着直接了当的说明：&lt;/p&gt;
+&lt;p&gt;The only way to write complex software that won't fall on its face is to build
+it out of simple modules connected by well-defined interfacs, so that most
+problems are local and you can have some hope of fixing or optimizing a part
+without breaking the whole.&lt;/p&gt;
+&lt;p&gt;还记得初始编程那会，在古董级的 Turbo C 3.0 上照着书操弄着初始的 C语言，什么都不懂，是如此的质朴。
+但人是会进步的，在数次痛苦经历的洗礼，以及多本经典的好书 &lt;a class="footnote-reference" href="#id3" id="id1"&gt;[1]&lt;/a&gt; 的指导下，逐渐意识到，要想在跟复杂
+度和需求变化的战斗中不至于一败涂地，必须尽量保持模块间的正交性，紧密耦合的模块将导致修改局部而牵
+动全局的后果；还要做好模块的信息隐藏，包括对于复杂和易变部分的封装，以及定义良好的模块接口；应使用
+薄胶合层来组织程序中的不同模块和层次，厚重的胶合层必然会带来额外的逻辑处理以及复杂度；不能忘了，
+要让事情尽可能的简单，但不能过于简单。&lt;/p&gt;
+&lt;p&gt;程序设计是一种高挑战性的游戏，接触不久就牢牢捕获了我的心，这些年来，除了收获到许多难以言喻的快乐外，
+我的人生观和价值观都得到了深刻的改变。自由的信息获取观念，理性的对待问题，追寻简单的艺术和美，这就
+是我现在的所有。模块化不仅是编程的概念，生活中依然适用。&lt;/p&gt;
+&lt;p&gt;围绕着模块化，立即就联想到了 KISS 原则和 DRY 原则，两者都是在心中周而复始的小声音，就像是旅途中的指南
+针，指引着自己不断前行。&lt;/p&gt;
+&lt;div class="section" id="kiss"&gt;
+&lt;h2&gt;&lt;a class="reference external" href="http://en.wikipedia.org/wiki/KISS_principle"&gt;KISS原则&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;对于 UNIX 哲学，一言以蔽之，Keep It Simple, Stupid!&lt;/p&gt;
+&lt;p&gt;简单可行的设计永远都是好的设计，复杂的设计意味着更难以应对变化。&lt;/p&gt;
+&lt;p&gt;小时候，自己总是认为，唯有对事情有了完全的掌握后才能将事情完美的做好。同时，有那么一种倾向，必须作
+出最好的决策，以最专注的态度去实现，然后就能得出最好的结果。&lt;/p&gt;
+&lt;p&gt;上面的想法看起来很美好。但是现实告诉我们，这是最没有实效的方法之一。我们必须明白，在这世界上，任何
+有意义的事情，都不存在一蹴而就和一劳永逸。事物总是处于变化与稳定的临界状态中，彼此维持于一种微妙的
+动态平衡，经外来或内部因素的稍一“搅拌”，各种未知状态便会涌向，趋向于混沌。简而言之，事情总是会变化
+的，不论你想还是不想，有所准备还是匆忙应付。&lt;/p&gt;
+&lt;p&gt;为了应对变化，我们必须更为灵活。在我看来，这就是 KISS 原则最重要的含义。&lt;/p&gt;
+&lt;p&gt;而模块化的设计，正是 KISS 原则的最佳体现和实践。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="dry"&gt;
+&lt;h2&gt;&lt;a class="reference external" href="http://en.wikipedia.org/wiki/Don%27t_repeat_yourself"&gt;DRY原则&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;重复是有害的。&lt;/p&gt;
+&lt;p&gt;最简单地来看，重复消耗更多的时间，而时间实质上就是一切。&lt;/p&gt;
+&lt;p&gt;在良好的模块化设计里，DRY 原则必然是被遵守的准则之一。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h2&gt;写在最后&lt;/h2&gt;
+&lt;p&gt;模块化设计在现代的结构化编程里是如此的普遍，每个人对于模块化都有不同的认识。我不认为自己对于模块化
+有多么深刻的了解，但在喜爱上编程的这些时间里，确实对模块化有了点点滴滴的感悟，于是写下了自己对于
+模块化的一些认知。这是此 Blog 里的第一篇文章，基于程序员世界 &amp;quot;Hello World&amp;quot; 的习惯，故将此文
+命名为 &amp;quot;Hello Modulatity&amp;quot;。&lt;/p&gt;
+&lt;hr class="docutils" /&gt;
+&lt;table class="docutils footnote" frame="void" id="id3" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id1"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;毫不犹豫地推荐《代码大全》、《程序员修炼之道》、《UNIX编程艺术》和《重构》等极品好书。&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+</content>
+  </entry>
+  <entry xml:base="http://www.pywave.com/feed.atom">
+    <title type="text">简洁编程</title>
+    <id>http://www.pywave.com/2012/09/19/concise-programming</id>
+    <updated>2012-09-19T00:00:00Z</updated>
+    <link href="http://www.pywave.com/2012/09/19/concise-programming" />
+    <author>
+      <name>Jason Lai</name>
+    </author>
+    <content type="html">&lt;p&gt;干净优雅，就是 Python 在我心中的主要印象。&lt;/p&gt;
+&lt;p&gt;当然 Python 绝不是什么完美的编程语言，但其独特的编程风格确实很招人喜爱。得益于强制缩进和优秀的
+编码规范（类 &lt;a class="reference external" href="http://www.python.org/dev/peps/pep-0008/"&gt;PEP8&lt;/a&gt; 和 &lt;a class="reference external" href="http://www.python.org/dev/peps/pep-0020/"&gt;The Zen of Python&lt;/a&gt; ），使用 Python 编写的代码一般都能具有颇高的
+可读性。结合 Python 强大的动态特性（如 duck-typing, closure, lazy evaluation 等），我们可以
+大幅度降低解决问题所需的代码量。代码量越少意味着可能存在的 Bug 也就越少，也意味着工作量的降低，
+从而提高我们的生产力，让程序质量更容易得到保障和维护。&lt;/p&gt;
+&lt;p&gt;每门程序设计语言都有其最佳实践的领域，对于 Python 来说，其适合于那些对执行效率不敏感，逻辑处理
+相对复杂的场景，典型的就是构建Web应用啦（君不见 &lt;a class="reference external" href="https://www.djangoproject.com/"&gt;Django&lt;/a&gt; , &lt;a class="reference external" href="http://www.tornadoweb.org/"&gt;Tornado&lt;/a&gt; , &lt;a class="reference external" href="http://flask.pocoo.org/"&gt;Flask&lt;/a&gt; , etc）。啊，
+对了，Python 用于快速原型构建也是出了名的好用。事实上， Python 因为其对C颇强的亲和力，在一些
+需要复杂逻辑处理和高性能的领域也有很多的建树，例如科学计算领域（强大的 &lt;a class="reference external" href="http://www.scipy.org/"&gt;SciPy&lt;/a&gt; 和 &lt;a class="reference external" href="http://numpy.scipy.org/"&gt;NumPy&lt;/a&gt; ）和
+图像处理领域（很有用的 &lt;a class="reference external" href="http://www.pythonware.com/products/pil/"&gt;PIL&lt;/a&gt; ）。&lt;/p&gt;
+&lt;p&gt;只要实际使用过 Python 去解决问题，很快会喜欢上这门语言。在学习 Python 之初，我写过好一些小脚本
+来自娱自乐，用来管理资源，以及获取资源（有爱的漫画和性感美女图是不能少的，lol）。而现在，自己也
+在工作中使用 Python 来处理实际问题。在使用 Python 编程的实践中，逐渐感悟到了一个 Python 程序
+设计最佳实践，扁平化设计。当然，这所谓的最佳实践仅是个人的愚见，归纳出来有益身心健康哈。 :-)&lt;/p&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h2&gt;扁平化设计&lt;/h2&gt;
+&lt;p&gt;通过良好的设计，使用 Python 编写的代码一般都能具有较好的模块性，即对复杂度的正常封装，以及定义
+清晰的调用接口。宏观来看，有了定义良好的模块，我们需要解决的问题还有很多，模块间协作和模块间通信
+都必须考虑。对于这类问题，存在许多不同的设计和解决方案。在过往不多的程序设计经验里，包括察看他人
+的设计（各种不同开源框架代码），以及自己的点滴实践体会，随着思考深入，也开始有了自己见解。现在能
+察觉到，扁平化设计为这类问题提供了一个相对简单清晰的解决模式。&lt;/p&gt;
+&lt;p&gt;假设现在有若干个功能模块，包括模块A、模块B和模块C，模块间会有程度不同的交互通信。要如何进行处理？
+最简单的想法是，让各模块保持独立，当模块A需要和模块C通信时，直接进行特定的交互就行了。乍看起来，
+这样的实现确实很简单，但弊端是，我们要为各模块单独定义特定的通信接口（函数或方法），如果需要交互
+的模块数量很多，模块间的交互实现必然趋向复杂，我们还必须要对众多分散于各模块的通信处理实现进行管
+理。为了从这些复杂度中解放出来，我们需要对这一想法做一些升级。&lt;/p&gt;
+&lt;p&gt;思考一会便能想到，应该可以设置一个中心模块来对模块间的交互进行统一管理。假设现在有一个主干模块P，
+当模块A需要和模块C通信时，首先通过主干模块P获得与模块C交互的接口，然后就能通过该接口与模块C进行
+通信。多了一个间接操作，实现似乎变得更为烦琐。事实上，主干模块P的存在确实增加了模块间通信的约束
+性，但这并没有阻碍模块间的有效通信，我们可以在主干模块中对程序的整体运行进行统一的管理和设置，
+获得的好处是，降低了可能出现的模块间通信复杂度，增加了模块局部变化及功能扩展时的应对能力，从而
+保持了程序整体设计的整洁清晰。扁平化设计的中心思想就在于此，遵守着浅分层的原则，使模块间交互的
+处理和抽象尽可能的减少。程序可能会不断膨胀，扁平化设计的简洁性则避免了复杂度的失控增长，简洁而
+漂亮。&lt;/p&gt;
+&lt;p&gt;扁平化设计还有一个优点，那就是可以很容易的实现可见原型，然后基于原型持续进行进行快速迭代，完善
+具体的实现以及进行功能扩展，而测试也可以与构建同步进行。说起来，这些也都是使用 Python 编程的优势
+哈。&lt;/p&gt;
+&lt;p&gt;我认为 Python 这类动态语言很适合扁平化设计，没有“烦人”的类型定义，配合只关心行为的 Duck Typing
+特性，让程序可以保持简洁和灵活性。扁平化设计的难点之一是，主干模块不应该与功能模块有过多耦合，
+而各功能模块则需要“知道”关于主干模块和程序运行的相关信息， Python 出色的动态特性为之提供了足够
+的支持，免去很多细节的处理。同时， Python 代码可读性高的优点可以让我们较快的了解程序的实现。只要
+理解了整体的设计思想，遵循扁平化设计的程序会具有相当高的清晰性，也就是说，扁平化设计可以让程序员
+更容易地掌握程序整体的运作，从而更好地去理解具体的内部逻辑。&lt;/p&gt;
+&lt;p&gt;当然，扁平化设计不是也不可能是万事适用的设计准则，其也具有许多的局限性。限于自己资质和经历有限，
+还需要更多的实践才能对扁平化设计有更多的认识。但是我依旧认为（起码现在），扁平化设计是简洁编程
+的一种体现，而且很适合用于 Python 程序设计。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h2&gt;最后&lt;/h2&gt;
+&lt;p&gt;从程序设计的角度来看，简洁清晰的代码通常更为优雅，这意味着可以更好的应对变化，可以无拘束地作出许
+多有趣实效的设计，而不需要拘泥于一些特定思想或模式（上面论述的扁平化设计便是一例）。 Python 朴实
+干净的语法，出色的动态特性，开放的社区文化，不完美但强大的标准库，以及众多优秀的第三方库，让我们
+在解决问题时，不需要在语言和底层实现上纠缠太多，专注于问题的本身，从而可以迅速开始创造生产力。在
+使用 Python 进行程序设计时，简洁编程之道可以说时刻都在影响着我们的思维。&lt;/p&gt;
+&lt;p&gt;少即是多， Python 的“无拘束”没有强行附加什么精神负担或者枷锁，为了乐趣，为了实效。&lt;/p&gt;
+&lt;p&gt;辽阔的星空就在眼前，只待那好奇的心去进行探索。&lt;/p&gt;
+&lt;/div&gt;
+</content>
+  </entry>
+  <entry xml:base="http://www.pywave.com/feed.atom">
+    <title type="text">记配置管理的相关设计和想法</title>
+    <id>http://www.pywave.com/2013/02/03/some-ideas-and-design-of-the-configuration-management</id>
+    <updated>2013-02-03T00:00:00Z</updated>
+    <link href="http://www.pywave.com/2013/02/03/some-ideas-and-design-of-the-configuration-management" />
+    <author>
+      <name>Jason Lai</name>
+    </author>
+    <content type="html">&lt;p&gt;最近工作的主旋律是围绕着监控和配置系统的构建进行相关设计和实现，包括原始数据的收集和传输，汇总数据
+的处理、存储和展示，以及相关配置的设置和分发，等等系列相关任务。对于这个相对较大型的项目，需要
+多个程序相互协作，且对整体运行的可靠性和稳健性都有很高的要求。面对此类高要求项目，感到颇具挑战性，
+故这段时间是开足马力地投入到开发中去。&lt;/p&gt;
+&lt;p&gt;在项目实现的过程中，除了接触到许多新鲜的工具和技术外，感悟最深的是，如何宏观地看待程序设计，让整体
+项目保持足够的简单，以便组合各程序一起去完成大规模的任务。在此想记录工作中的一些思考和想法。不会
+展示具体实现的详细，主要是程序设计时思维的变化过程。&lt;/p&gt;
+&lt;p&gt;配置管理是项目的一个重点和难点，因为我们设想其为公司内部 Python 项目的配置管理中心 &lt;a class="footnote-reference" href="#id8" id="id2"&gt;[1]&lt;/a&gt; 。配置管理
+中心，单从字面意思就知道其用处，但要实现一个高可靠和高可用的配置管理中心绝对不是一件简单的事情。&lt;/p&gt;
+&lt;p&gt;基于尽早完成第一版可用程序和 &lt;a class="reference external" href="/2012/07/23/hello-modularity/#kiss"&gt;KISS&lt;/a&gt; 的原则，我们决定使用 &lt;a class="reference external" href="http://thrift.apache.org/"&gt;Thrift&lt;/a&gt; 来进行 RPC 通信,先完成一个基础的
+类 C/S 模型的配置管理中心程序。配置管理中心的整体功能由两个独立程序（配置的设置和分发功能）来实现，
+如此设计的原因有几个，这里就不表述了。下面的记述，就是我在处理配置设置和分发程序相关逻辑时的一些
+思考。&lt;/p&gt;
+&lt;p&gt;对于配置数据，两个程序各自的处理逻辑相当一目了然。一个程序利用配置数据（只读），自身作为服务器，
+对外提供配置分发的功能，下面我会称之为 &lt;cite&gt;分发程序&lt;/cite&gt; 。另一个程序生成和控制配置数据（读写），处理
+创建、更新和删除等典型的 &lt;a class="reference external" href="http://en.wikipedia.org/wiki/Create,_read,_update_and_delete"&gt;CRUD&lt;/a&gt; 操作，下面我会称之为 &lt;cite&gt;控制程序&lt;/cite&gt; 。&lt;/p&gt;
+&lt;p&gt;嗯，事情就是这样，问题也算是清晰，但是，如何让两独立程序对配置信息进行更好的通信交互？看似很简单
+的问题，实际中还是需要花一番时间解决。在具体的处理里，从开始的配置文件驱动，到后来的数据库驱动，
+我的想法有很大的变化。&lt;/p&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h2&gt;配置文件驱动&lt;/h2&gt;
+&lt;p&gt;项目启动后，便开始考虑程序的具体实现。当时没想太多其他的东西，非常直接，配置文件嘛，当然就是用文件
+来记录。接着想到的念头是，配置的逻辑可能会很复杂，应该使用一种高可读性的配置文法去记录配置。好吧，
+这种角色非 &lt;a class="reference external" href="http://yaml.org/"&gt;YAML&lt;/a&gt; 莫属啦。然后，就到了费脑筋的事情啦。&lt;/p&gt;
+&lt;p&gt;&lt;cite&gt;控制程序&lt;/cite&gt; 和 &lt;cite&gt;分发程序&lt;/cite&gt; 相互独立， &lt;cite&gt;控制程序&lt;/cite&gt; 在变更了配置后，应该让 &lt;cite&gt;分发程序&lt;/cite&gt; 知道，让其去获取
+最新的配置。诚然，两个程序间需要交互通信。但是，考虑到整体项目还包含多个程序，我不想为这两个程序
+额外引入一套独立的 &lt;a class="reference external" href="http://en.wikipedia.org/wiki/Inter-process_communication"&gt;IPC&lt;/a&gt; 机制，希望能让程序间的交互尽量保持简单。&lt;/p&gt;
+&lt;p&gt;应该怎么做呢？其实再想一下就能搞清楚状况。关键就在两个程序对于配置数据的处理逻辑上，一个会对配置
+进行读写操作，但是另一个则只对配置进行读操作。对的，其实解决方法的思路很简单，只要 &lt;cite&gt;控制程序&lt;/cite&gt; 能
+在修改配置数据后对外标识配置已改变， &lt;cite&gt;分发程序&lt;/cite&gt; 可以按照一定时间周期轮询监测配置是否有变更，从而就
+能够及时更新配置，使配置数据的分发保持可用状态。&lt;/p&gt;
+&lt;p&gt;事实上，我们可以简单粗暴地实现配置的分发可用，即忽略配置数据是否被修改， &lt;cite&gt;分发程序&lt;/cite&gt; 在每一次轮询
+监测时都初始化一次全部配置，这样确实可以保证 &lt;cite&gt;分发程序&lt;/cite&gt; 维护着最新的配置数据。&lt;/p&gt;
+&lt;p&gt;显然，这类弊端明显的实现是不会得到同意的，我们应该更优雅的实现上面所描述的思路。更好的想法是，确定
+一个存放配置文件的目录，根据文件的最近修改时间（即 mtime ）来判断配置是否有变更，这样唯有当一个配置
+文件真正被修改后， &lt;cite&gt;分发程序&lt;/cite&gt; 才会 reload 该配置。&lt;/p&gt;
+&lt;p&gt;为了更好的管理配置，不同的配置文件可以存放在不同的路径中，以目录层级进行逻辑区分。并且，在底层目录
+存放一个 config.yml 中心配置文件，其将作为 &lt;cite&gt;控制程序&lt;/cite&gt; 和 &lt;cite&gt;分发程序&lt;/cite&gt; 的通信桥梁，汇总所有配置文件的
+存放路径以及其它的更多信息。&lt;/p&gt;
+&lt;p&gt;通过监测这中心配置文件，我们可以很容易的获取有效配置文件的相关信息。其设置的格式很简单，如下所示:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+PATHS:
+    .:
+        - python.yml
+        - dclist.yml
+    host:
+        cn:
+            - info.yml
+        usa:
+            - info.yml
+    database:
+        - mongodb.yml
+        - mysql.yml
+        - redis.yml
+&lt;/pre&gt;
+&lt;p&gt;上面展示的是 config.yml 中配置路径相关的信息， &lt;cite&gt;分发程序&lt;/cite&gt; 可以很方便的由此获取所有有效配置文件的
+路径信息。下面的 transform 函数利用递归，可以将 config.yml 中的路径信息转换为 python 中的 list 来
+存储。简单的处理，但也很有趣。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;yaml&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;transform&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;paths&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;_walk&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;prefix&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;iteritems&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;isinstance&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;dict&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+                &lt;span class="n"&gt;_walk&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;prefix&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="nb"&gt;isinstance&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;list&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+                &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;_walk&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt; &lt;span class="n"&gt;prefix&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;/&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;v&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+            &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="n"&gt;paths&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;prefix&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;_walk&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;paths&lt;/span&gt;
+
+&lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;config.yml&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;conf_dict&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;yaml&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+    &lt;span class="n"&gt;paths&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;transform&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;conf_dict&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;&amp;#39;PATHS&amp;#39;&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;利用 transform 函数将 config.yml 配置转换后，可以得到:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+['host/cn/info.yml',
+ 'host/usa/info.yml',
+ './python.yml',
+ './dclist.yml',
+ 'database/mongodb.yml',
+ 'database/mysql.yml',
+ 'database/redis.yml']
+&lt;/pre&gt;
+&lt;p&gt;获得有效配置文件的路径后，就可以初始化各配置文件的相关上下文信息，包括我们需要的文件最近修改时间。
+搭配其余的一些配置元信息， &lt;cite&gt;分发程序&lt;/cite&gt; 就可以按照确定的时间周期轮询监测配置文件啦。&lt;/p&gt;
+&lt;p&gt;OK，整体的思路大概就是这样，不复杂，容易实现，不过事情永远都是变化大于计划。很快我又否定了这个配置
+文件驱动的解决方案，转向使用数据库来实现。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id4"&gt;
+&lt;h2&gt;数据库驱动&lt;/h2&gt;
+&lt;p&gt;从配置文件转到数据库，原因很简单也很自然， &lt;cite&gt;控制程序&lt;/cite&gt; 对配置的处理主要是 CRUD 操作，使用数据库会
+更加方便。更重要的，现在的初版配置管理中心， &lt;cite&gt;分发程序&lt;/cite&gt; 只需实现为单机部署程序就行了，但是不排除
+未来会将其改进为分布式程序。到时候，如果后端是使用数据库（ MySql ）管理配置数据，可以很容易的过渡。
+反之， ... ^!*&amp;amp;^%%!&amp;amp;%^&amp;amp;$*% ... ，我都懒得去想了。&lt;/p&gt;
+&lt;p&gt;之所以没有一开始就使用数据库方案，主要是因为预想到某些配置会很复杂，比较难用 schema 进行描述。如
+Host 数据收集的配置，总的可用配置项会很多，而单个配置项也会有多个不同选择，每部主机会根据实际情况
+定制特定的配置。使用 YAML 来进行设置会很简单，能适应不同的状况，但如果想用数据库的 table 来结构化
+表示，这个 ... 就太恐怖了。&lt;/p&gt;
+&lt;p&gt;还好，后来自己也转过了弯来，谁说数据库 table 不能存储 YAML 文本的？只要 &lt;cite&gt;控制程序&lt;/cite&gt; 保证 YAML 文本
+的正确性，直接使用 text field 就可以了。也就是说，使用 text field 来存储 YAML 配置数据，一行数据
+即一个独立配置（如一个 Host 的配置）。如此一来，对于那些具有复杂逻辑的配置，就可以使用数据库进行
+存储啦。当然，对于那些逻辑简单的配置，只需要使用数据库固定的 schema 表示就足够了。&lt;/p&gt;
+&lt;p&gt;确定可以使用数据库来存储配置数据后，老问题又浮出水面了，如何让 &lt;cite&gt;分发程序&lt;/cite&gt; 知道配置数据已经变更了。
+在上面的配置文件驱动里，我们使用文件的最近修改时间来让 &lt;cite&gt;分发程序&lt;/cite&gt; 判断配置的状态。显然，我们可以
+采用同样的策略，通过设置一个 is_modified 域来标识该配置是否有改动（0 为 False， 1 为 True）。如此，
+&lt;cite&gt;分发程序&lt;/cite&gt; 每次监测只需检索出那些 is_modified 域为 1 的配置项，根据这些配置项更新缓存，然后再将
+数据库中这些数据项的 is_modified 域设置为 0，即可完成监测操作。&lt;/p&gt;
+&lt;p&gt;但是，仅靠 is_modified 域还是不够。为什么？因为在数据库中，当一些配置被删除掉了，这些配置不会留下
+任何痕迹， &lt;cite&gt;分发程序&lt;/cite&gt; 也就无法知道有什么数据项被删除了 &lt;a class="footnote-reference" href="#id9" id="id5"&gt;[2]&lt;/a&gt; 。&lt;/p&gt;
+&lt;p&gt;为了解决这个问题，考虑了几个解决方案。其中包括，让 &lt;cite&gt;分发程序&lt;/cite&gt; 每隔一天就完整载入一次所有配置，从而
+就避免了配置数据的遗漏，但是这个解决方法使得配置的有效性会有较长的延迟，无法接受，抛弃。&lt;/p&gt;
+&lt;p&gt;最后采用的解决方法是，使用懒惰删除。类似于 is_modified 域，我们再定义一个 is_deleted 域，用来标识
+该配置是否在 &lt;cite&gt;控制程序&lt;/cite&gt; 中被删除了。也就是说，在 &lt;cite&gt;控制程序&lt;/cite&gt; 中删除某些配置时，实质上不会真的删除该
+配置，只是将该配置的 is_deleted 域设置为 1。这样一来， &lt;cite&gt;分发程序&lt;/cite&gt; 除了检索 is_modified 域的操作外
+（如上面所述），还需要检索那些 is_deleted 域为 1 的配置项，更新缓存的配置数据，最后将数据库中的这些
+数据项真正删除掉。这时候，才算最终完成了监测操作。&lt;/p&gt;
+&lt;p&gt;上面的处理逻辑听起来貌似有点复杂，但实际上整体的操作还是很简单，主要是我的语言描述不够透彻简洁。
+我想，还是代码更来得简单易懂。下面的代码展示了 &lt;cite&gt;分发程序&lt;/cite&gt; 初始化和更新操作的逻辑处理。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;yaml&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;config&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;
+
+&lt;span class="n"&gt;Configs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;setup_config&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="k"&gt;global&lt;/span&gt; &lt;span class="n"&gt;Configs&lt;/span&gt;
+
+    &lt;span class="n"&gt;sql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT * FROM `conf_info` WHERE `is_deleted` != 1&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;infos&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;infos&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;Configs&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;title&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;yaml&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;update_config&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="k"&gt;global&lt;/span&gt; &lt;span class="n"&gt;Configs&lt;/span&gt;
+
+    &lt;span class="c"&gt;# 处理 deleted 的数据项&lt;/span&gt;
+    &lt;span class="n"&gt;select_deleted_sql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT * FROM `conf_info` &amp;quot;&lt;/span&gt;
+                          &lt;span class="s"&gt;&amp;quot;WHERE `is_deleted` = 1&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;infos&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;select_deleted_sql&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;infos&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;del_sql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;DELETE FROM `conf_info` WHERE `id` = &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;infos&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="c"&gt;# 更新 Configs，然后将数据项从数据库中真正删除掉&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;title&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;Configs&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="k"&gt;del&lt;/span&gt; &lt;span class="n"&gt;Configs&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;title&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;execute&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;del_sql&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;id&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="c"&gt;# 处理 modified 的数据项&lt;/span&gt;
+    &lt;span class="n"&gt;select_modified_sql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT * FROM `conf_info` &amp;quot;&lt;/span&gt;
+                           &lt;span class="s"&gt;&amp;quot;WHERE `is_modified` = 1&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;infos&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;select_modified_sql&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;infos&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;udp_sql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;UPDATE `conf_info` SET `is_modified` = &amp;#39;0&amp;#39; &amp;quot;&lt;/span&gt;
+                   &lt;span class="s"&gt;&amp;quot;WHERE `id` = &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;infos&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="c"&gt;# 更新 Configs，然后将数据项的 is_modified 域修正为 0&lt;/span&gt;
+            &lt;span class="n"&gt;Configs&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;title&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;  &lt;span class="n"&gt;yaml&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;execute&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;udp_sql&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;id&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;上面的代码就是 &lt;cite&gt;分发程序&lt;/cite&gt; 中，监测线程实际实现的大概逻辑。看到这里，你大概有点忍耐不住要嚷嚷了，
+明明在使用数据库，当有请求时，直接向数据库查询配置数据，处理后返回就是啦。明明可以简单的实现，为
+什么要动态监测配置数据，硬生生在程序中维护多一份配置数据。&lt;/p&gt;
+&lt;p&gt;简单的想，“请求，查询，处理，返回”，这样的处理逻辑当然是成立的。但有得就有失，其代价是相对较高的
+计算资源以及缓慢的数据库查询。公司的基础业务是 CDN 服务，可以预想未来的服务器数量会不断增长，前瞻
+性的考虑配置分发服务器的性能问题是有必要的。当然，这个话题还可以延伸很长。我只想说，很多东西是复杂
+还是简单，不是一句话就能说完全的。上面所说的方案能解决问题，而且整个概念并不复杂，实际的代码实现也
+确实很简单，也可以复用。所以，实际就这样做了。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id6"&gt;
+&lt;h2&gt;还有不足&lt;/h2&gt;
+&lt;p&gt;细心点就能发现，上面数据库驱动中所说的解决方法还是存在着不足， &lt;cite&gt;分发程序&lt;/cite&gt; 对于配置更新的监测会有
+漏洞，使得程序缓存的配置信息与数据库的配置信息不完全一致。&lt;/p&gt;
+&lt;p&gt;在 &lt;cite&gt;分发程序&lt;/cite&gt; 使用了 info.title 来做 key 缓存所有的配置信息，假设该配置项的 title 被 &lt;cite&gt;控制程序&lt;/cite&gt; 修改
+了。当然，其 is_modified 域会被标识为 1， &lt;cite&gt;分发程序&lt;/cite&gt; 在监测配置项时会对其进行更新。但是因为 title 被
+修改了， &lt;cite&gt;分发程序&lt;/cite&gt; 将会用新的 title 做 key 缓存该配置信息，而旧的 title 所缓存的配置信息却还保留在
+内存中。&lt;/p&gt;
+&lt;p&gt;解决方法是，每隔一天（或更长的时间）进行一次全面的更新，校正可能的“脏配置数据”，保证 &lt;cite&gt;分发程序&lt;/cite&gt; 中
+配置信息的准确性和同步性。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id7"&gt;
+&lt;h2&gt;不是总结的总结&lt;/h2&gt;
+&lt;p&gt;在工程上应该尽可能使用简单实用的方法。&lt;/p&gt;
+&lt;p&gt;简单清晰的实现方案，更容易理解和构建，使得不可能避免的 Debug 更为轻松（可能发生在一年后或者三天后），
+也让程序的重构和改进变得更为轻松。总的来说，就是让我们的生活更舒适。 :-)&lt;/p&gt;
+&lt;hr class="docutils" /&gt;
+&lt;table class="docutils footnote" frame="void" id="id8" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id2"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;最开始想使用 &lt;a class="reference external" href="http://zookeeper.apache.org/"&gt;ZooKeeper&lt;/a&gt; ，不过考察后认为还是自行研发更符合实况。&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id9" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id5"&gt;[2]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;但是，使用配置文件驱动可以知道，文件跟数据库还是不一样的。&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+</content>
+  </entry>
+</feed>
+

@@ -1,0 +1,269 @@
+
+/*
+  about 相关设置 
+*/
+.about
+img {
+    margin: 16px;
+    float: right;
+}
+
+.about {
+    padding: 12px 24px 12px;
+    margin-bottom: 4px;
+    margin-top: 8px;
+    -webkit-border-radius: 16px;
+    -moz-border-radius: 16px;
+    border-radius: 16px;
+}
+
+.about h2,
+.about h3 {
+    color: #2277AA;
+    margin-bottom: 0;
+    text-align: left;
+}
+
+/*
+  header, body, section, p 相关设置 
+*/
+header {
+    margin-top: 38px;
+    margin-bottom: 12px;
+}
+
+header
+.primary {
+    bottom: 0;
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-top: 36px;
+}
+
+section {
+    border-bottom: 1px dotted #CCCCCC;
+    overflow: hidden;
+    padding: 20px 15px 16px;
+}
+
+body {
+    background: url("/static/img/bk_body.jpg") repeat scroll 0 0 transparent;
+    color: #333333;
+    margin: 0;
+    font-family: 'trebuchet ms',verdana,helvetica,arial,sans-serif
+    font-size: 16px;
+    line-height: 1.5;    
+    text-align: left;
+/* margin-top: 48px; */
+}
+
+p {
+  margin: 12px auto;
+  /* font-family: Georgia,arial,"Trebuchet MS","Times New Roman",Times,sans-serif; */
+  /* font-size: 16px; */
+  /* line-height: 28px; */
+}
+
+/*
+  section-unit 相关设置 
+*/
+.section-unit {
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: white;
+    -webkit-border-radius: 16px;
+    -moz-border-radius: 16px;
+    border-radius: 16px;
+}
+
+.section-unit
+h1
+a {
+    color: #5ABAC9;
+    /* color: #353535; */
+    text-decoration: none;
+}
+
+.section-unit h1 {
+    font-size: 28px;
+}
+
+.section-unit
+h1
+a:hover {
+    color: #1FA2E1;
+    text-decoration: none;
+}
+
+/*
+  article-unit 相关设置
+*/
+.article-unit {
+    padding: 32px;
+    margin-bottom: 10px;
+    /* background-color: #eeeeee; */
+    background-color: white;
+    -webkit-border-radius: 16px;
+    -moz-border-radius: 16px;
+    border-radius: 16px;
+}
+
+.article-unit h1 {
+    color: #5ABAC9;
+}
+
+
+
+header {
+    margin-top: 48px;
+}
+
+footer {
+    color: #555555;
+    font-size: 16px;
+    text-align: center;
+    border-top: 1px dotted #CCCCCC;
+}
+
+.entry-date,
+.entry-tags {
+    text-align: right;
+}
+
+.readmore {
+    float: right;
+}
+
+.tags-attr {
+    border-bottom: 1.2px solid #DDDDDD;
+    font-size: 12px;
+    list-style-type: none;
+    margin: 10px auto;
+    padding: 4px 0;
+}
+
+.date-attr small {
+    color: #ABABAB;
+    display: block;
+    font-size: 12px;
+    letter-spacing: normal;
+    text-align: right;
+}
+
+.entry-overview
+a.readmore
+{
+    text-align: right;
+}
+
+header
+.title
+a.title {
+    border-bottom: 0 none;
+    color: #222222;
+    font-family: QuicksandBold,Helvetica,Arial,sans-serif;
+    font-size: 38px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    line-height: 1;
+    text-decoration: none;
+    text-shadow: 1px 1px 0 #DDDDDD, 0 0 10px #999999, 0 0 10px #999999;
+    width: 688px;
+}
+
+
+
+/*
+  blog-archives 相关设置
+*/
+#blog-archives
+h1:first-child {
+    padding-top: 0.75em;
+}
+
+#blog-archives
+h1 {
+    display: inline-block;
+    float: left;
+    color: pink;
+    font-weight: normal;
+    margin-bottom: 0.3em;
+    position: relative;
+    top: -18px;
+}
+
+#blog-archives
+.article {
+    margin-left: 5em;
+    margin-bottom: 0.7em;
+}
+
+#blog-archives
+.article {
+    padding: 1em 0;
+    position: relative;
+}
+
+#blog-archives
+.article {
+    padding: 8px 4px 4px 64px;
+    border-bottom: 1.3px dotted #D9D9D9;
+}
+
+#blog-archives
+.time {
+    left: 0;
+    position: absolute;
+    text-align: right;
+    top: 0.8em;
+    font-size: 1.3em;
+    line-height: 1.2em;
+    padding-right: 16px;
+    color: #5ABAC9;
+}
+
+#blog-archives
+.article
+.entry-title {
+    font-size: 1.3em;
+    font-weight: 200;
+    line-height: 27px;
+    margin-bottom: 0.3em;
+    padding-left: 6px;
+}
+
+#blog-archives
+.article
+.tags {
+    font-size: 0.85em;
+    color: #AAAAAA;
+    line-height: 1em;
+    margin: 0;
+    padding-left: 6px;
+}
+
+#blog-archives
+.article
+.tags a {
+    color: #AAAAAA;
+    text-decoration: underline;
+}
+
+#blog-archives
+.article
+.tags a:hover {
+    color: #1863A1;
+}
+
+
+.container {
+    width: 780px;
+}
+
+.highlight pre {
+    padding: 18px;
+    -webkit-border-radius: 12px;
+    -moz-border-radius: 12px;
+    border-radius: 12px;
+}

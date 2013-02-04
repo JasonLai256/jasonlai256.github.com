@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>对于 itertools.tee 的理解 - Thought Atlas</title>
+    <link rel="alternate" href="/feed.atom" title="Recent Blog Posts" type="application/atom+xml">
+    <link type="text/css" href="/static/css/bootstrap.css" rel="stylesheet">
+    <link type="text/css" href="/static/css/style.css" rel="stylesheet">
+    
+<link type="text/css" href="/static/_pygments.css" rel="stylesheet">
+
+</head>
+<body data-offset="50">
+  <header class="container">
+    <div class="title">
+      <a class="title" href="/">Thought Atlas</a>
+      <nav class="pull-right">
+	<ul class="primary nav nav-pills">
+	  <li><a href="/">blog</a>
+	  <li><a href="/archive/">archive</a>
+	  <li><a href="/tags/">tags</a>
+	  <li><a href="/about/">about</a>
+	</ul>
+      </nav>
+    </div>
+    <p>tries to make easy things easy and hard things possible.</p>
+  </header>
+
+  <div class="container">
+    <div id="content">
+<div class="article-unit" >
+  <h1 class="title">对于 itertools.tee 的理解</h1>
+
+
+  
+  <p class="entry-date">written on 2012年12月9日星期日
+  
+
+  <p>在 Python 编程中，生成器（Generator）和迭代器（Iterator）是两个非常有用 + 好用的语言特性。在函数
+中使用 yield 关键字即定义了生成器对象，通过 yield 语句可以对外生成值序列，实际上就是返回了一个特殊
+的迭代器。生成器每次迭代的值( 调用 next() )都是实时生成的，其会在生成的前后对生成器对象的状态进行
+保存/恢复，从而可以间隔有序地运行代码，持续生成值。生成器的这种延迟计算特性（ <a class="reference external" href="http://en.wikipedia.org/wiki/Lazy_evaluation">lazy evaluation</a> ）
+在很多情况下都非常有用，最典型的，可以让程序动态遍历那些需要可观资源（CPU 或 I/O）生成的对象，平摊
+生成对象的时空开销。在日常的 Python 编程中，用生成器搭配程序中的一些 for 循环结构，往往可以减少程
+序实现的逻辑复杂度。为什么？因为我们可以将控制循环的逻辑转移到生成器中 <a class="footnote-reference" href="#id4" id="id1">[1]</a> ， 从而将不同的处理逻辑
+分离开来，各个击破，当然会好处理不少。</p>
+<div class="section" id="id2">
+<h2>来看看 itertools.tee</h2>
+<p>为了更方便地在实际环境中使用生成器和迭代器，标准库里的 itertools 模块对一些常用的辅助操作进行了封
+装，提供了许多有用的函数。 tee(iterable[, n] ) 就是其中一个很有趣的函数，在 <a class="reference external" href="http://docs.python.org/library/itertools.html#itertools.tee">官方文档的描述里</a> ，
+其作用是为一个可迭代对象生成n个独立的迭代器。如果只是看文档中的文字介绍，还是有点难理解到底 tee 的
+作用是什么。当然还是代码的解释最直接，下面我们会动手动眼来看看如何使用生成器来实现上面所说的功能。
+首先我们先来看下，与 tee 函数效果相同的一个简单 Python 代码实现（为了能更方便进行讲解，我们将该
+函数名改为 tee1），</p>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">collections</span>
+
+<span class="k">def</span> <span class="nf">tee1</span><span class="p">(</span><span class="n">iterable</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">it</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
+    <span class="n">deques</span> <span class="o">=</span> <span class="p">[</span><span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span>
+    <span class="k">def</span> <span class="nf">gen</span><span class="p">(</span><span class="n">mydeque</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">mydeque</span><span class="p">:</span>             <span class="c"># when the local deque is empty</span>
+                <span class="n">newval</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">it</span><span class="p">)</span>       <span class="c"># fetch a new value and</span>
+                <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">deques</span><span class="p">:</span>        <span class="c"># load it to all the deques</span>
+                    <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">newval</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">mydeque</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">gen</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">deques</span><span class="p">)</span>
+</pre></div>
+<p>上面的代码利用了闭包和生成器的特性，很直白简单地实现了 tee 函数的功能，相当漂亮的代码。函数可接收
+两个参数，包括可迭代对象 iterable 以及默认值为2的生成数n。为了缓存数据，生成了n个 deque 实例来做
+数据容器，赋值于 deques 变量，之所以使用 deque 是因为其高效的序列两端操作。然后，在内部定义 gen
+生成器，参数 mydeque 即该 gen 生成器所维护的数据容器，利用外部的 deques 和自身维护的 mydeque 实现
+简单的控制逻辑，包括何时取 iterable 的新值，如何缓存数据，以及如何对外生成值。通过返回n个 gen 生
+成器对象，我们就为可迭代对象 iterable 生成了n个独立的迭代器了。</p>
+<p>对代码演绎一番，我们现在可以很清晰地知道 tee 函数的作用，也应该搞清楚了什么情景下我们会需要用
+到 tee 函数。假设我们构建了一个生成器，通过内部实现的大量复杂逻辑来生成对象，生成器的延迟计算特性
+让我们可以在有需要时才生成，但是，当我们需要在几个地方单独使用生成的对象（同步或异步），怎样做才
+行呢？简单的解决方法是，通过使用几个生成器来进行处理。但如此一来，就重复了大量的运算，这当然不会
+是我们所希望的。那能不能做到一次运算，到处使用呢？ tee 函数的作用便在这里，我们对 tee 函数生成的
+几个生成器进行相关操作，但实际上只做一次的生成期运算。</p>
+<p>但 tee1 的实现显然还有改进的余地，最明显的，tee1 中为每个 gen 生成器都缓存了一份数据，这毫无疑问
+会造成数据冗余和操作冗余。好吧，让我们对 tee1 进行一些修改。下面的 tee2 便是改造的成果:</p>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">collections</span>
+
+<span class="k">def</span> <span class="nf">tee2</span><span class="p">(</span><span class="n">iterable</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">it</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">()</span>
+    <span class="n">iter_index</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>        <span class="c"># hold the indexes for the gen objects</span>
+    <span class="k">def</span> <span class="nf">gen</span><span class="p">(</span><span class="n">gid</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">maxindex</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">iter_index</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">iter_index</span><span class="p">[</span><span class="n">gid</span><span class="p">]</span> <span class="o">==</span> <span class="n">maxindex</span><span class="p">:</span>    <span class="c"># when the index is the max index</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">it</span><span class="p">)</span>               <span class="c"># fetch a new value and</span>
+                <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>            <span class="c"># load it to the items</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="n">iter_index</span><span class="p">[</span><span class="n">gid</span><span class="p">]]</span>
+            <span class="n">iter_index</span><span class="p">[</span><span class="n">gid</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">yield</span> <span class="n">value</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">gen</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+</pre></div>
+<p>现在，每个 gen 生成器都共享一份数据缓存（items），并都维护着一份自身位置的指针（index）。每个 gen 在
+生成值时会对 index 进行检测，若该 index 处于末尾位置，则对 iterable 取新值并缓存到外部的 items 数
+据容器中，然后像其他情况那样返回数据容器中 index 位置的对象。恩，看来 tee2 已经解决了 tee1 中数据冗
+余和操作冗余的问题了，应该开始喝杯咖啡休息会啦。噢，等等，再仔细看看 tee2 的代码 ... ，Oh No，虽然解
+决了一个问题，但是似乎又带来了一个也相当明显的“隐患”...</p>
+<p>聪明的你肯定发现了，上面的代码实现只有取 value 和缓存 value 的操作，并没有将 value 从数据容器中释放
+的操作！这可能导致的后果是，如果 iterable 对象会且需要持续生成值（有可能是无限生成），我们机器中的
+小小内存便会逐渐被填满，这可不是什么好事情，对吧。没办法，我们需要对代码继续进行改进，这不，就出现
+了下面的 tee3。 :-)</p>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">collections</span>
+
+<span class="k">def</span> <span class="nf">tee3</span><span class="p">(</span><span class="n">iterable</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">it</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">()</span>
+    <span class="n">iter_index</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span>        <span class="c"># hold the indexes for those gen object</span>
+    <span class="k">def</span> <span class="nf">gen</span><span class="p">(</span><span class="n">gid</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">maxindex</span><span class="p">,</span> <span class="n">minindex</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">iter_index</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">iter_index</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">iter_index</span><span class="p">[</span><span class="n">gid</span><span class="p">]</span> <span class="o">==</span> <span class="n">maxindex</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">it</span><span class="p">)</span>
+                <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">iter_index</span><span class="p">[</span><span class="n">gid</span><span class="p">]</span> <span class="o">==</span> <span class="n">minindex</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">iter_index</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">minindex</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">items</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="n">iter_index</span><span class="p">[</span><span class="n">gid</span><span class="p">]</span> <span class="o">-</span> <span class="n">minindex</span><span class="p">]</span>
+            <span class="n">iter_index</span><span class="p">[</span><span class="n">gid</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">yield</span> <span class="n">value</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">gen</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+</pre></div>
+<p>为了避免数据容器的数据“只进不出”，我们必须判断特定情况，从数据容器中 POP 出值。首先需要想的是，
+数据容器里的值在什么时候能被抛弃。毫无疑问，只有当该值为一个“无用值”时，也就是这个值在往后都不可
+能会被使用的时候，我们就可以将该值从数据容器中 POP 掉。</p>
+<p>搞清楚了相关逻辑，很快就能找到解决方法。当一个 gen 对象对外生成值时，如果其维护的 index 为索引
+集合（ iter_index ）中的最小索引，且在当前唯一拥有这个索引，那么处于 index 的值在生成后将成为一
+个“无用值”。对应 tee3 中的代码是:</p>
+<pre class="literal-block">
+elif iter_index[gid] == minindex:
+    value = items[0]
+    if iter_index.count(minindex) == 1:
+        items.popleft()
+</pre>
+<p>由此，我们便解决了 tee2 代码中存在的隐患。但是，从 tee1 开始逐步改进，到现在 tee3，其实也还是有
+很多不完美的地方（例如代码中还没有任何异常检测）。除此之外，现在的 tee3 对比 tee1 是繁复了许多，
+也晦涩难懂了许多。典型的，为了在一般情况下正确取值，必须计算当前索引与最小索引间的差值，来获得 gen
+对象在数据容器中对应的值，于是代码牺牲了可读性:</p>
+<pre class="literal-block">
+value = items[iter_index[gid] - minindex]
+</pre>
+</div>
+<div class="section" id="id3">
+<h2>最后</h2>
+<p>还有一点可以在 tee3 的代码中看出来， tee 函数为我们节省了重复计算的开销，但是缓存大量对象的隐患还是
+存在。想像一下，在 tee 返回的多个 gen 生成器对象里，只要有一个生成器一直不生成值，那么很不幸，tee
+函数中的数据容器还是会缓存 iterable 对象迭代出来的所以值，因为没有时机能让数据容器去释放值。任何技
+术都是有权衡的，应该怎样使用 tee 函数，需要根据具体的情景来思考。</p>
+<p>最后，还想再说一句，不要忽视 Python 强大的动态特性，我们可以作出许多有趣实效的设计，而无需拘泥于一些
+特定思想或模式。</p>
+<hr class="docutils" />
+<table class="docutils footnote" frame="void" id="id4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>有时候，循环控制会很复杂，容易作出糟糕的设计，最典型的就是那无止境的 while True 循环 ;-)</td></tr>
+</tbody>
+</table>
+</div>
+
+
+  
+  <p class="entry-tags">This entry was tagged
+    
+      <a href="/tags/Generator/">Generator</a>, 
+      <a href="/tags/Iterator/">Iterator</a> and 
+      <a href="/tags/Python/">Python</a>
+  </p>
+  
+</div>
+
+  
+    
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'JasonLai'; // required: replace example with your forum shortname
+    
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+  
+</div>
+  </div>
+
+  <footer data-offset=50>
+    <div class="container">
+      <p>© Copyright 2012 by Jason Lai. </p>
+    </div>
+  </footer>
+</body>
+</html>

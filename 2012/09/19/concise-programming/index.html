@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>简洁编程 - Thought Atlas</title>
+    <link rel="alternate" href="/feed.atom" title="Recent Blog Posts" type="application/atom+xml">
+    <link type="text/css" href="/static/css/bootstrap.css" rel="stylesheet">
+    <link type="text/css" href="/static/css/style.css" rel="stylesheet">
+    
+<link type="text/css" href="/static/_pygments.css" rel="stylesheet">
+
+</head>
+<body data-offset="50">
+  <header class="container">
+    <div class="title">
+      <a class="title" href="/">Thought Atlas</a>
+      <nav class="pull-right">
+	<ul class="primary nav nav-pills">
+	  <li><a href="/">blog</a>
+	  <li><a href="/archive/">archive</a>
+	  <li><a href="/tags/">tags</a>
+	  <li><a href="/about/">about</a>
+	</ul>
+      </nav>
+    </div>
+    <p>tries to make easy things easy and hard things possible.</p>
+  </header>
+
+  <div class="container">
+    <div id="content">
+<div class="article-unit" >
+  <h1 class="title">简洁编程</h1>
+
+
+  
+  <p class="entry-date">written on 2012年9月19日星期三
+  
+
+  <p>干净优雅，就是 Python 在我心中的主要印象。</p>
+<p>当然 Python 绝不是什么完美的编程语言，但其独特的编程风格确实很招人喜爱。得益于强制缩进和优秀的
+编码规范（类 <a class="reference external" href="http://www.python.org/dev/peps/pep-0008/">PEP8</a> 和 <a class="reference external" href="http://www.python.org/dev/peps/pep-0020/">The Zen of Python</a> ），使用 Python 编写的代码一般都能具有颇高的
+可读性。结合 Python 强大的动态特性（如 duck-typing, closure, lazy evaluation 等），我们可以
+大幅度降低解决问题所需的代码量。代码量越少意味着可能存在的 Bug 也就越少，也意味着工作量的降低，
+从而提高我们的生产力，让程序质量更容易得到保障和维护。</p>
+<p>每门程序设计语言都有其最佳实践的领域，对于 Python 来说，其适合于那些对执行效率不敏感，逻辑处理
+相对复杂的场景，典型的就是构建Web应用啦（君不见 <a class="reference external" href="https://www.djangoproject.com/">Django</a> , <a class="reference external" href="http://www.tornadoweb.org/">Tornado</a> , <a class="reference external" href="http://flask.pocoo.org/">Flask</a> , etc）。啊，
+对了，Python 用于快速原型构建也是出了名的好用。事实上， Python 因为其对C颇强的亲和力，在一些
+需要复杂逻辑处理和高性能的领域也有很多的建树，例如科学计算领域（强大的 <a class="reference external" href="http://www.scipy.org/">SciPy</a> 和 <a class="reference external" href="http://numpy.scipy.org/">NumPy</a> ）和
+图像处理领域（很有用的 <a class="reference external" href="http://www.pythonware.com/products/pil/">PIL</a> ）。</p>
+<p>只要实际使用过 Python 去解决问题，很快会喜欢上这门语言。在学习 Python 之初，我写过好一些小脚本
+来自娱自乐，用来管理资源，以及获取资源（有爱的漫画和性感美女图是不能少的，lol）。而现在，自己也
+在工作中使用 Python 来处理实际问题。在使用 Python 编程的实践中，逐渐感悟到了一个 Python 程序
+设计最佳实践，扁平化设计。当然，这所谓的最佳实践仅是个人的愚见，归纳出来有益身心健康哈。 :-)</p>
+<div class="section" id="id2">
+<h2>扁平化设计</h2>
+<p>通过良好的设计，使用 Python 编写的代码一般都能具有较好的模块性，即对复杂度的正常封装，以及定义
+清晰的调用接口。宏观来看，有了定义良好的模块，我们需要解决的问题还有很多，模块间协作和模块间通信
+都必须考虑。对于这类问题，存在许多不同的设计和解决方案。在过往不多的程序设计经验里，包括察看他人
+的设计（各种不同开源框架代码），以及自己的点滴实践体会，随着思考深入，也开始有了自己见解。现在能
+察觉到，扁平化设计为这类问题提供了一个相对简单清晰的解决模式。</p>
+<p>假设现在有若干个功能模块，包括模块A、模块B和模块C，模块间会有程度不同的交互通信。要如何进行处理？
+最简单的想法是，让各模块保持独立，当模块A需要和模块C通信时，直接进行特定的交互就行了。乍看起来，
+这样的实现确实很简单，但弊端是，我们要为各模块单独定义特定的通信接口（函数或方法），如果需要交互
+的模块数量很多，模块间的交互实现必然趋向复杂，我们还必须要对众多分散于各模块的通信处理实现进行管
+理。为了从这些复杂度中解放出来，我们需要对这一想法做一些升级。</p>
+<p>思考一会便能想到，应该可以设置一个中心模块来对模块间的交互进行统一管理。假设现在有一个主干模块P，
+当模块A需要和模块C通信时，首先通过主干模块P获得与模块C交互的接口，然后就能通过该接口与模块C进行
+通信。多了一个间接操作，实现似乎变得更为烦琐。事实上，主干模块P的存在确实增加了模块间通信的约束
+性，但这并没有阻碍模块间的有效通信，我们可以在主干模块中对程序的整体运行进行统一的管理和设置，
+获得的好处是，降低了可能出现的模块间通信复杂度，增加了模块局部变化及功能扩展时的应对能力，从而
+保持了程序整体设计的整洁清晰。扁平化设计的中心思想就在于此，遵守着浅分层的原则，使模块间交互的
+处理和抽象尽可能的减少。程序可能会不断膨胀，扁平化设计的简洁性则避免了复杂度的失控增长，简洁而
+漂亮。</p>
+<p>扁平化设计还有一个优点，那就是可以很容易的实现可见原型，然后基于原型持续进行进行快速迭代，完善
+具体的实现以及进行功能扩展，而测试也可以与构建同步进行。说起来，这些也都是使用 Python 编程的优势
+哈。</p>
+<p>我认为 Python 这类动态语言很适合扁平化设计，没有“烦人”的类型定义，配合只关心行为的 Duck Typing
+特性，让程序可以保持简洁和灵活性。扁平化设计的难点之一是，主干模块不应该与功能模块有过多耦合，
+而各功能模块则需要“知道”关于主干模块和程序运行的相关信息， Python 出色的动态特性为之提供了足够
+的支持，免去很多细节的处理。同时， Python 代码可读性高的优点可以让我们较快的了解程序的实现。只要
+理解了整体的设计思想，遵循扁平化设计的程序会具有相当高的清晰性，也就是说，扁平化设计可以让程序员
+更容易地掌握程序整体的运作，从而更好地去理解具体的内部逻辑。</p>
+<p>当然，扁平化设计不是也不可能是万事适用的设计准则，其也具有许多的局限性。限于自己资质和经历有限，
+还需要更多的实践才能对扁平化设计有更多的认识。但是我依旧认为（起码现在），扁平化设计是简洁编程
+的一种体现，而且很适合用于 Python 程序设计。</p>
+</div>
+<div class="section" id="id3">
+<h2>最后</h2>
+<p>从程序设计的角度来看，简洁清晰的代码通常更为优雅，这意味着可以更好的应对变化，可以无拘束地作出许
+多有趣实效的设计，而不需要拘泥于一些特定思想或模式（上面论述的扁平化设计便是一例）。 Python 朴实
+干净的语法，出色的动态特性，开放的社区文化，不完美但强大的标准库，以及众多优秀的第三方库，让我们
+在解决问题时，不需要在语言和底层实现上纠缠太多，专注于问题的本身，从而可以迅速开始创造生产力。在
+使用 Python 进行程序设计时，简洁编程之道可以说时刻都在影响着我们的思维。</p>
+<p>少即是多， Python 的“无拘束”没有强行附加什么精神负担或者枷锁，为了乐趣，为了实效。</p>
+<p>辽阔的星空就在眼前，只待那好奇的心去进行探索。</p>
+</div>
+
+
+  
+  <p class="entry-tags">This entry was tagged
+    
+      <a href="/tags/Python/">Python</a> and 
+      <a href="/tags/%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1/">程序设计</a>
+  </p>
+  
+</div>
+
+  
+    
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'JasonLai'; // required: replace example with your forum shortname
+    
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+  
+</div>
+  </div>
+
+  <footer data-offset=50>
+    <div class="container">
+      <p>© Copyright 2012 by Jason Lai. </p>
+    </div>
+  </footer>
+</body>
+</html>
