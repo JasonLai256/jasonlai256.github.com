@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Hello Modularity - Thought Atlas</title>
+    <link rel="alternate" href="/feed.atom" title="Recent Blog Posts" type="application/atom+xml">
+    <link type="text/css" href="/static/css/bootstrap.css" rel="stylesheet">
+    <link type="text/css" href="/static/css/style.css" rel="stylesheet">
+    <link type="text/css" href="/static/css/tango.css" rel="stylesheet">
+    
+<link type="text/css" href="/static/_pygments.css" rel="stylesheet">
+
+</head>
+<body data-offset="50">
+  <header class="container">
+    <div class="title">
+      <a class="title" href="/">Thought Atlas</a>
+      <nav class="pull-right">
+	<ul class="primary nav nav-pills">
+	  <li><a href="/">blog</a>
+	  <li><a href="/archive/">archive</a>
+	  <li><a href="/tags/">tags</a>
+	  <li><a href="/about/">about</a>
+	</ul>
+      </nav>
+    </div>
+    <p>tries to make easy things easy and hard things possible.</p>
+  </header>
+
+  <div class="container">
+    <div id="content">
+<div class="article-unit" >
+  <h1 class="title">Hello Modularity</h1>
+
+
+  
+  <p class="entry-date">written on 2012年7月23日星期一
+  
+
+  <p>现代的程序设计是越来越复杂，为了掌控其中不断增长的复杂度，以及可能随时到来的需求变化，模块化设
+计是最重要的手段之一。学习编程以来，对模块化的理解随着知识经验的增加而不断变化。到现在，恍然意
+识到，人类社会的每一个重大进步和发展无不是 <strong>站在巨人的肩膀上</strong> ，雄伟的金字塔由众多规格统一的石
+头砌成，现代的集成电路基于基本的逻辑门和触发器，大规模的程序实现离不开结构化程序设计以及各式
+功能模块支持。大道至简，模块化的思想并不局限于程序设计，是如此简单，也是如此繁复。</p>
+<p>每当程序复杂度增长到一定程度时，总能感悟到模块化编程的重要性，在 The Art of Unix Programming
+中对于模块化有着直接了当的说明：</p>
+<p>The only way to write complex software that won't fall on its face is to build
+it out of simple modules connected by well-defined interfacs, so that most
+problems are local and you can have some hope of fixing or optimizing a part
+without breaking the whole.</p>
+<p>还记得初始编程那会，在古董级的 Turbo C 3.0 上照着书操弄着初始的 C语言，什么都不懂，是如此的质朴。
+但人是会进步的，在数次痛苦经历的洗礼，以及多本经典的好书 <a class="footnote-reference" href="#id3" id="id1">[1]</a> 的指导下，逐渐意识到，要想在跟复杂
+度和需求变化的战斗中不至于一败涂地，必须尽量保持模块间的正交性，紧密耦合的模块将导致修改局部而牵
+动全局的后果；还要做好模块的信息隐藏，包括对于复杂和易变部分的封装，以及定义良好的模块接口；应使用
+薄胶合层来组织程序中的不同模块和层次，厚重的胶合层必然会带来额外的逻辑处理以及复杂度；不能忘了，
+要让事情尽可能的简单，但不能过于简单。</p>
+<p>程序设计是一种高挑战性的游戏，接触不久就牢牢捕获了我的心，这些年来，除了收获到许多难以言喻的快乐外，
+我的人生观和价值观都得到了深刻的改变。自由的信息获取观念，理性的对待问题，追寻简单的艺术和美，这就
+是我现在的所有。模块化不仅是编程的概念，生活中依然适用。</p>
+<p>围绕着模块化，立即就联想到了 KISS 原则和 DRY 原则，两者都是在心中周而复始的小声音，就像是旅途中的指南
+针，指引着自己不断前行。</p>
+<div class="section" id="kiss">
+<h2><a class="reference external" href="http://en.wikipedia.org/wiki/KISS_principle">KISS原则</a></h2>
+<p>对于 UNIX 哲学，一言以蔽之，Keep It Simple, Stupid!</p>
+<p>简单可行的设计永远都是好的设计，复杂的设计意味着更难以应对变化。</p>
+<p>小时候，自己总是认为，唯有对事情有了完全的掌握后才能将事情完美的做好。同时，有那么一种倾向，必须作
+出最好的决策，以最专注的态度去实现，然后就能得出最好的结果。</p>
+<p>上面的想法看起来很美好。但是现实告诉我们，这是最没有实效的方法之一。我们必须明白，在这世界上，任何
+有意义的事情，都不存在一蹴而就和一劳永逸。事物总是处于变化与稳定的临界状态中，彼此维持于一种微妙的
+动态平衡，经外来或内部因素的稍一“搅拌”，各种未知状态便会涌向，趋向于混沌。简而言之，事情总是会变化
+的，不论你想还是不想，有所准备还是匆忙应付。</p>
+<p>为了应对变化，我们必须更为灵活。在我看来，这就是 KISS 原则最重要的含义。</p>
+<p>而模块化的设计，正是 KISS 原则的最佳体现和实践。</p>
+</div>
+<div class="section" id="dry">
+<h2><a class="reference external" href="http://en.wikipedia.org/wiki/Don%27t_repeat_yourself">DRY原则</a></h2>
+<p>重复是有害的。</p>
+<p>最简单地来看，重复消耗更多的时间，而时间实质上就是一切。</p>
+<p>在良好的模块化设计里，DRY 原则必然是被遵守的准则之一。</p>
+</div>
+<div class="section" id="id2">
+<h2>写在最后</h2>
+<p>模块化设计在现代的结构化编程里是如此的普遍，每个人对于模块化都有不同的认识。我不认为自己对于模块化
+有多么深刻的了解，但在喜爱上编程的这些时间里，确实对模块化有了点点滴滴的感悟，于是写下了自己对于
+模块化的一些认知。这是此 Blog 里的第一篇文章，基于程序员世界 &quot;Hello World&quot; 的习惯，故将此文
+命名为 &quot;Hello Modulatity&quot;。</p>
+<hr class="docutils" />
+<table class="docutils footnote" frame="void" id="id3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>毫不犹豫地推荐《代码大全》、《程序员修炼之道》、《UNIX编程艺术》和《重构》等极品好书。</td></tr>
+</tbody>
+</table>
+</div>
+
+
+  
+  <p class="entry-tags">This entry was tagged
+    
+      <a href="/tags/DRY/">DRY</a>, 
+      <a href="/tags/KISS/">KISS</a>, 
+      <a href="/tags/%E6%A8%A1%E5%9D%97%E5%8C%96/">模块化</a> and 
+      <a href="/tags/%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1/">程序设计</a>
+  </p>
+  
+</div>
+
+  
+    
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'thoughtatlas'; // required: replace example with your forum shortname
+    
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+  
+</div>
+  </div>
+
+  <footer data-offset=50>
+    <div class="container">
+      <p>© Copyright 2012 by Jason Lai. </p>
+    </div>
+  </footer>
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-38208289-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+</body>
+</html>

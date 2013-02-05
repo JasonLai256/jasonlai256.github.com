@@ -1,0 +1,553 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title type="text">Recent Blog Posts</title>
+  <id>http://www.pywave.com/feed.atom</id>
+  <updated>2013-02-03T00:00:00Z</updated>
+  <link href="http://www.pywave.com/" />
+  <link href="http://www.pywave.com/feed.atom" rel="self" />
+  <subtitle type="text">Recent blog posts</subtitle>
+  <generator>Werkzeug</generator>
+  <entry xml:base="http://www.pywave.com/feed.atom">
+    <title type="text">对于 itertools.tee 的理解</title>
+    <id>http://www.pywave.com/2012/12/09/talk-about-the-tee-function-in-itertools-module</id>
+    <updated>2012-12-09T00:00:00Z</updated>
+    <link href="http://www.pywave.com/2012/12/09/talk-about-the-tee-function-in-itertools-module" />
+    <author>
+      <name>Jason Lai</name>
+    </author>
+    <content type="html">&lt;p&gt;在 Python 编程中，生成器（Generator）和迭代器（Iterator）是两个非常有用 + 好用的语言特性。在函数
+中使用 yield 关键字即定义了生成器对象，通过 yield 语句可以对外生成值序列，实际上就是返回了一个特殊
+的迭代器。生成器每次迭代的值( 调用 next() )都是实时生成的，其会在生成的前后对生成器对象的状态进行
+保存/恢复，从而可以间隔有序地运行代码，持续生成值。生成器的这种延迟计算特性（ &lt;a class="reference external" href="http://en.wikipedia.org/wiki/Lazy_evaluation"&gt;lazy evaluation&lt;/a&gt; ）
+在很多情况下都非常有用，最典型的，可以让程序动态遍历那些需要可观资源（CPU 或 I/O）生成的对象，平摊
+生成对象的时空开销。在日常的 Python 编程中，用生成器搭配程序中的一些 for 循环结构，往往可以减少程
+序实现的逻辑复杂度。为什么？因为我们可以将控制循环的逻辑转移到生成器中 &lt;a class="footnote-reference" href="#id4" id="id1"&gt;[1]&lt;/a&gt; ， 从而将不同的处理逻辑
+分离开来，各个击破，当然会好处理不少。&lt;/p&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h2&gt;来看看 itertools.tee&lt;/h2&gt;
+&lt;p&gt;为了更方便地在实际环境中使用生成器和迭代器，标准库里的 itertools 模块对一些常用的辅助操作进行了封
+装，提供了许多有用的函数。 tee(iterable[, n] ) 就是其中一个很有趣的函数，在 &lt;a class="reference external" href="http://docs.python.org/library/itertools.html#itertools.tee"&gt;官方文档的描述里&lt;/a&gt; ，
+其作用是为一个可迭代对象生成n个独立的迭代器。如果只是看文档中的文字介绍，还是有点难理解到底 tee 的
+作用是什么。当然还是代码的解释最直接，下面我们会动手动眼来看看如何使用生成器来实现上面所说的功能。
+首先我们先来看下，与 tee 函数效果相同的一个简单 Python 代码实现（为了能更方便进行讲解，我们将该
+函数名改为 tee1），&lt;/p&gt;
+&lt;pre class="code python literal-block"&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;collections&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;tee1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iterable&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;it&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;iter&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iterable&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;deques&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;collections&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;deque&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;)]&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;gen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mydeque&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="n"&gt;mydeque&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;             &lt;span class="c"&gt;# when the local deque is empty&lt;/span&gt;
+                &lt;span class="n"&gt;newval&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;next&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;it&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;       &lt;span class="c"&gt;# fetch a new value and&lt;/span&gt;
+                &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;deques&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;        &lt;span class="c"&gt;# load it to all the deques&lt;/span&gt;
+                    &lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;newval&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;mydeque&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;popleft&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;tuple&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;deques&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;
+&lt;p&gt;上面的代码利用了闭包和生成器的特性，很直白简单地实现了 tee 函数的功能，相当漂亮的代码。函数可接收
+两个参数，包括可迭代对象 iterable 以及默认值为2的生成数n。为了缓存数据，生成了n个 deque 实例来做
+数据容器，赋值于 deques 变量，之所以使用 deque 是因为其高效的序列两端操作。然后，在内部定义 gen
+生成器，参数 mydeque 即该 gen 生成器所维护的数据容器，利用外部的 deques 和自身维护的 mydeque 实现
+简单的控制逻辑，包括何时取 iterable 的新值，如何缓存数据，以及如何对外生成值。通过返回n个 gen 生
+成器对象，我们就为可迭代对象 iterable 生成了n个独立的迭代器了。&lt;/p&gt;
+&lt;p&gt;对代码演绎一番，我们现在可以很清晰地知道 tee 函数的作用，也应该搞清楚了什么情景下我们会需要用
+到 tee 函数。假设我们构建了一个生成器，通过内部实现的大量复杂逻辑来生成对象，生成器的延迟计算特性
+让我们可以在有需要时才生成，但是，当我们需要在几个地方单独使用生成的对象（同步或异步），怎样做才
+行呢？简单的解决方法是，通过使用几个生成器来进行处理。但如此一来，就重复了大量的运算，这当然不会
+是我们所希望的。那能不能做到一次运算，到处使用呢？ tee 函数的作用便在这里，我们对 tee 函数生成的
+几个生成器进行相关操作，但实际上只做一次的生成期运算。&lt;/p&gt;
+&lt;p&gt;但 tee1 的实现显然还有改进的余地，最明显的，tee1 中为每个 gen 生成器都缓存了一份数据，这毫无疑问
+会造成数据冗余和操作冗余。好吧，让我们对 tee1 进行一些修改。下面的 tee2 便是改造的成果:&lt;/p&gt;
+&lt;pre class="code python literal-block"&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;collections&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;tee2&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iterable&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;it&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;iter&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iterable&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;items&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;collections&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;deque&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;iter_index&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;        &lt;span class="c"&gt;# hold the indexes for the gen objects&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;gen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;maxindex&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;max&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;maxindex&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;    &lt;span class="c"&gt;# when the index is the max index&lt;/span&gt;
+                &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;next&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;it&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;               &lt;span class="c"&gt;# fetch a new value and&lt;/span&gt;
+                &lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;            &lt;span class="c"&gt;# load it to the items&lt;/span&gt;
+            &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;]]&lt;/span&gt;
+            &lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+            &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;tuple&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;
+&lt;p&gt;现在，每个 gen 生成器都共享一份数据缓存（items），并都维护着一份自身位置的指针（index）。每个 gen 在
+生成值时会对 index 进行检测，若该 index 处于末尾位置，则对 iterable 取新值并缓存到外部的 items 数
+据容器中，然后像其他情况那样返回数据容器中 index 位置的对象。恩，看来 tee2 已经解决了 tee1 中数据冗
+余和操作冗余的问题了，应该开始喝杯咖啡休息会啦。噢，等等，再仔细看看 tee2 的代码 ... ，Oh No，虽然解
+决了一个问题，但是似乎又带来了一个也相当明显的“隐患”...&lt;/p&gt;
+&lt;p&gt;聪明的你肯定发现了，上面的代码实现只有取 value 和缓存 value 的操作，并没有将 value 从数据容器中释放
+的操作！这可能导致的后果是，如果 iterable 对象会且需要持续生成值（有可能是无限生成），我们机器中的
+小小内存便会逐渐被填满，这可不是什么好事情，对吧。没办法，我们需要对代码继续进行改进，这不，就出现
+了下面的 tee3。 :-)&lt;/p&gt;
+&lt;pre class="code python literal-block"&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;collections&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;tee3&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iterable&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;it&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;iter&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iterable&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;items&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;collections&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;deque&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;iter_index&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;        &lt;span class="c"&gt;# hold the indexes for those gen object&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;gen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="n"&gt;maxindex&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;minindex&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;max&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="nb"&gt;min&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;maxindex&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;next&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;it&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+                &lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;minindex&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;count&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;minindex&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                    &lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;popleft&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+            &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;minindex&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+            &lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+            &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;tuple&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;/pre&gt;
+&lt;p&gt;为了避免数据容器的数据“只进不出”，我们必须判断特定情况，从数据容器中 POP 出值。首先需要想的是，
+数据容器里的值在什么时候能被抛弃。毫无疑问，只有当该值为一个“无用值”时，也就是这个值在往后都不可
+能会被使用的时候，我们就可以将该值从数据容器中 POP 掉。&lt;/p&gt;
+&lt;p&gt;搞清楚了相关逻辑，很快就能找到解决方法。当一个 gen 对象对外生成值时，如果其维护的 index 为索引
+集合（ iter_index ）中的最小索引，且在当前唯一拥有这个索引，那么处于 index 的值在生成后将成为一
+个“无用值”。对应 tee3 中的代码是:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+elif iter_index[gid] == minindex:
+    value = items[0]
+    if iter_index.count(minindex) == 1:
+        items.popleft()
+&lt;/pre&gt;
+&lt;p&gt;由此，我们便解决了 tee2 代码中存在的隐患。但是，从 tee1 开始逐步改进，到现在 tee3，其实也还是有
+很多不完美的地方（例如代码中还没有任何异常检测）。除此之外，现在的 tee3 对比 tee1 是繁复了许多，
+也晦涩难懂了许多。典型的，为了在一般情况下正确取值，必须计算当前索引与最小索引间的差值，来获得 gen
+对象在数据容器中对应的值，于是代码牺牲了可读性:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+value = items[iter_index[gid] - minindex]
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h2&gt;最后&lt;/h2&gt;
+&lt;p&gt;还有一点可以在 tee3 的代码中看出来， tee 函数为我们节省了重复计算的开销，但是缓存大量对象的隐患还是
+存在。想像一下，在 tee 返回的多个 gen 生成器对象里，只要有一个生成器一直不生成值，那么很不幸，tee
+函数中的数据容器还是会缓存 iterable 对象迭代出来的所以值，因为没有时机能让数据容器去释放值。任何技
+术都是有权衡的，应该怎样使用 tee 函数，需要根据具体的情景来思考。&lt;/p&gt;
+&lt;p&gt;最后，还想再说一句，不要忽视 Python 强大的动态特性，我们可以作出许多有趣实效的设计，而无需拘泥于一些
+特定思想或模式。&lt;/p&gt;
+&lt;hr class="docutils" /&gt;
+&lt;table class="docutils footnote" frame="void" id="id4" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id1"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;有时候，循环控制会很复杂，容易作出糟糕的设计，最典型的就是那无止境的 while True 循环 ;-)&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+</content>
+  </entry>
+  <entry xml:base="http://www.pywave.com/feed.atom">
+    <title type="text">浅谈 Gevent 与 Tornado</title>
+    <id>http://www.pywave.com/2012/08/17/about-gevent-and-tornado</id>
+    <updated>2012-08-17T00:00:00Z</updated>
+    <link href="http://www.pywave.com/2012/08/17/about-gevent-and-tornado" />
+    <author>
+      <name>Jason Lai</name>
+    </author>
+    <content type="html">&lt;p&gt;还是前几月的时候，几乎在同一时间，自己接触到了 Gevent 和 Tornado 这两个已经不新的东西，那时那个
+思绪混乱啊！似乎都支持异步，似乎都是无阻塞（non-blocking），性能似乎都好到个不行
+（&lt;a class="reference external" href="http://nichol.as/benchmark-of-python-web-servers"&gt;猛击&lt;/a&gt;）。知道两者虽是单线程，
+但基于无阻塞的特性，战斗力那个是嗖嗖地上涨，运用得当的话，hold住上K个连接不是问题。虽然很感
+兴趣，虽然完全没弄清楚两者内里的实质，但为了完成工作，略略了解了基本的应用后，卷起手袖就上啦。
+当然，作为一个有志的程序员，在满足了现实的迫切需要后，一颗渴望知其所以然的心便开始蠢蠢欲动。&lt;/p&gt;
+&lt;div class="section" id="tornado"&gt;
+&lt;h2&gt;从 Tornado 说起&lt;/h2&gt;
+&lt;p&gt;刚开始，对 Tornado 的感觉最为新鲜，在官网介绍里其是一个无阻塞的Web服务器以及相关工具的集合，但
+个人更为倾向其为一个颇为完备的微型 web 框架。Tornado 性能好的关键是其无阻塞异步的特性，但这魔术
+似的效果是如何达成的呢？迷思与困惑。我那小脑袋里的思维还停留于多进程（多线程）那样的并发模型中，
+实在有点难以理解 Tornado 的异步机制。&lt;/p&gt;
+&lt;p&gt;通过查阅各式文章以及源代码，整体的框架脉络开始逐渐在脑海中显现出来。其实，Tornado 的异步模型
+是由事件驱动以及特定的回调函数（callback）所组成的！一直没有弄明白，Tornado 具体是如何实现
+无阻塞异步，当清楚了事件驱动和回调函数的概念后，事情似乎又变得简单起来了。&lt;/p&gt;
+&lt;p&gt;对于一般的程序，在执行阶段若遇到 I/O 事件，整个进程将被阻塞住，直到 I/O 事件结束，程序又继续执行。
+接设我们对一些 I/O 事件进行了定制，使其可以立即返回（即无阻塞），那么程序将能立即继续执行。但
+问题又来了，那当 I/O 事件完成后又该怎么办呢？此时，回调函数的威力就出来了，我只需要将进行特定
+处理的回调函数与该 I/O 事件绑定起来，当该 I/O 事件完成后就调用绑定的回调函数，就可以处理具体的
+I/O 事件啦。啊，似乎还有一个问题，回调函数要如何与 I/O 事件绑定起来？最简单的想法是，直接通过
+一个 while True 循环不断的轮询，当检测到 I/O 事件完成了即触发回调函数。但是，这样的效率当然不会
+高，利用系统中高效的 I/O 事件轮询机制（epoll on Linux, kqueue on most BSD）就是最明智的
+解决方案。于是，无阻塞 I/O +事件驱动+高效轮询方式便组成了 Tornado 的异步模型。&lt;/p&gt;
+&lt;p&gt;Tornado 的核心是 ioloop 和 iostream 这两个模块，前者提供了一个高效的 I/O 事件循环，后者则封装了
+一个无阻塞的 socket 。通过向 ioloop 中添加网络 I/O 事件，利用无阻塞的 socket ，再搭配相应的回调
+函数，便可达到梦寐以求的高效异步执行啦。多说无益，来看一下具体的示例：&lt;/p&gt;
+&lt;pre class="code python literal-block"&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;tornado&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;ioloop&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;tornado.httpclient&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;AsyncHTTPClient&lt;/span&gt;
+
+&lt;span class="n"&gt;urls&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;'http://www.google.com'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;'http://www.yandex.ru'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;'http://www.python.org'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;print_head&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;'&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;: &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt; bytes: &lt;/span&gt;&lt;span class="si"&gt;%r&lt;/span&gt;&lt;span class="s"&gt;'&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                                 &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+                                 &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;[:&lt;/span&gt;&lt;span class="mi"&gt;50&lt;/span&gt;&lt;span class="p"&gt;]))&lt;/span&gt;
+
+&lt;span class="n"&gt;http_client&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;AsyncHTTPClient&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;urls&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;'Starting &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;'&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;http_client&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fetch&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;print_head&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;ioloop&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;IOLoop&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;instance&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;start&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;
+&lt;p&gt;因为使用了 AsyncHTTPClient 来处理请求操作，整个示例是异步执行的，即三个url请求无等待的依次发出。
+我们可以看到 fetch 方法使用了 print_head 函数来作为回调函数，这意味着，当 fetch 完成了请求操作，
+相应的 print_head 函数便会被触发调用。恩，... 额，...，乍看起来，使用 Tornado 进行异步编程似乎
+并不难，让人跃跃欲试。但实际上，在现实生活中，事件驱动的编程还是会很费脑力，需要一定的创造性思维。
+不过，这也许是 Tornado 受欢迎的原因之一呢。 :)&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="gevent"&gt;
+&lt;h2&gt;再来看下 Gevent&lt;/h2&gt;
+&lt;p&gt;Gevent 是基于协程（coroutine）实现的 Python 网络库，使用了轻量级的 greenlet 作为执行单元，并
+基于 libevent 事件循环构建了直观的调用接口。&lt;/p&gt;
+&lt;p&gt;当时看到这样的描述，脑袋的第一反应是，协程？？稍稍了解后，发现协程其实也不是什么高深的概念，协程
+也被称为微线程，一看这别名就知道跟线程应该很类似。作为类比倒也可以这么认为，两者关键的区别在于，
+线程是由系统进行调度的，而协程是由用户自己进行调度的。当知道这一事实后，立刻想到，这自行调度灵活
+肯定是会很灵活，但要调度的话可是很有难度的吧？调度的方法暂时不谈，除了更为灵活外，自行调度的直接
+结果当然就是省去了系统调度（什么用户态转内核态，以及什么 context switch），因此协程间切换的资源
+消耗很小，再配合协程生成成本很低的另一特点，这可真是相当的美妙。事实上，Python 语言本身就支持基础
+的协程的概念，generator 是其中的产物（&lt;a class="reference external" href="http://www.python.org/dev/peps/pep-0342/"&gt;这里&lt;/a&gt;）。&lt;/p&gt;
+&lt;p&gt;对于 Gevent，其使用的协程实际上就是 &lt;a class="reference external" href="http://greenlet.readthedocs.org/en/latest/index.html"&gt;greenlet&lt;/a&gt; 。当你使用 greenlet 生成了一些协程，就可以在这些
+协程里不断跳转执行，两个 greenlet 之间的跳转被称为切换（switch）。通过切换，我们就可以实现对协程
+的调度。还应该知道的是，每个 greenlet 都拥有一个父 greenlet ，这是在 greenlet 初始化时就确定的。
+当一个 greenlet 执行完毕后，执行权会切换到其父 greenlet 中。实际上，所有的 greenlet 会被组织成
+一颗树，树根便是最“老资格”的 greenlet ，这个老 greenlet 确定了各 greenlet 间的逻辑关系。&lt;/p&gt;
+&lt;p&gt;上面说到协程必须自行调度，不会是要自己构造一个调度器吧？这当然可以做到，但不是必须，因为 Gevent
+已经基于 greenlet 和 libevent 封装了许多基础常用的库，例如 socket 、event 和 queue 等，只要使用
+这些库进行开发，或者对使用的标准库或第三方库打一下补丁（monket patch），就能保证生成的各协程在
+I/O 等待时正确地进行切换，从而实现无阻塞的异步执行。&lt;/p&gt;
+&lt;p&gt;刚接触 Gevent 时，感觉跟传统的并发编程很类似，但了解渐深后，才发现这货实际上跟 Tornado 更为类似。
+因为， Gevent 本质上也是事件驱动。实现的策略可以是，在将要执行 I/O 阻塞事件时，先在事件循环中对该事件
+进行注册，关联的回调函数便是对当前协程的切换操作（&lt;strong&gt;current_greenlet.switch()&lt;/strong&gt;），注册成功后即
+切换回当前协程的父协程中进行执行（&lt;strong&gt;current_greenlet.parent.switch()&lt;/strong&gt;）。当注册的 I/O 事件被
+触发后，事件循环在恰当时机便会执行该回调函数，也就是切换到原先的协程继续执行程序。从而，就实现
+无阻塞的 I/O 事件处理。怎样，是否感觉相当的有趣？ :)&lt;/p&gt;
+&lt;p&gt;Gevent 了不得的地方还在于，我们能像编写一般程序那样来编写异步程序，这可是弥足珍贵。为了更直观的
+显示，让我们来看一下具体的运行示例:&lt;/p&gt;
+&lt;pre class="code python literal-block"&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;gevent&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;gevent&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;monkey&lt;/span&gt;
+&lt;span class="c"&gt;# patches stdlib (including socket and ssl modules) to cooperate with other greenlets&lt;/span&gt;
+&lt;span class="n"&gt;monkey&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;patch_all&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;urllib2&lt;/span&gt;
+
+&lt;span class="n"&gt;urls&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;'http://www.google.com'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;'http://www.yandex.ru'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;'http://www.python.org'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;print_head&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;'Starting &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;'&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;urllib2&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;urlopen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;'&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;: &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt; bytes: &lt;/span&gt;&lt;span class="si"&gt;%r&lt;/span&gt;&lt;span class="s"&gt;'&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[:&lt;/span&gt;&lt;span class="mi"&gt;50&lt;/span&gt;&lt;span class="p"&gt;]))&lt;/span&gt;
+
+&lt;span class="n"&gt;jobs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;gevent&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;spawn&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;print_head&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;urls&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="n"&gt;gevent&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;joinall&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;jobs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;
+&lt;p&gt;上面示例做的事情实际上跟前面 Tornado 的示例是一样，同样是异步的对url进行请求。在我看来，使用
+Gevent 进行编程，无论是可读性还是可操作性都能让人满意。但也要清楚，在实际操作中，为了达到较理想
+效果，经常还是需要根据不同的情况对代码进行一些相应的“雕琢”。还有一点很常被人忽略， Gevent 是
+基于协程实现的 Python 网络库，其适用面更多的是在于网络 I/O 频繁的需求里，很多情况下 Gevent 可能
+并不是很好的选择。总的来说，Gevent 确实很讨人喜爱，性能好，开销小，代码易维护，是广大 pythoner
+手中的一大利器。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h2&gt;总要总结一下&lt;/h2&gt;
+&lt;p&gt;作为一名 Python 程序员，在探究和使用 Tornado 与 Gevent 的过程里，除了得到许多思考的乐趣外，最
+让人高兴的是收获了一些全新的视野。使用 Python 编程的好处之一便是，可以很容易地跳出语言的框框去看
+各式问题，从而提高自己对于程序设计的总体认识。人生苦短，我用Python！  :-)&lt;/p&gt;
+&lt;/div&gt;
+</content>
+  </entry>
+  <entry xml:base="http://www.pywave.com/feed.atom">
+    <title type="text">简洁编程</title>
+    <id>http://www.pywave.com/2012/09/19/concise-programming</id>
+    <updated>2012-09-19T00:00:00Z</updated>
+    <link href="http://www.pywave.com/2012/09/19/concise-programming" />
+    <author>
+      <name>Jason Lai</name>
+    </author>
+    <content type="html">&lt;p&gt;干净优雅，就是 Python 在我心中的主要印象。&lt;/p&gt;
+&lt;p&gt;当然 Python 绝不是什么完美的编程语言，但其独特的编程风格确实很招人喜爱。得益于强制缩进和优秀的
+编码规范（类 &lt;a class="reference external" href="http://www.python.org/dev/peps/pep-0008/"&gt;PEP8&lt;/a&gt; 和 &lt;a class="reference external" href="http://www.python.org/dev/peps/pep-0020/"&gt;The Zen of Python&lt;/a&gt; ），使用 Python 编写的代码一般都能具有颇高的
+可读性。结合 Python 强大的动态特性（如 duck-typing, closure, lazy evaluation 等），我们可以
+大幅度降低解决问题所需的代码量。代码量越少意味着可能存在的 Bug 也就越少，也意味着工作量的降低，
+从而提高我们的生产力，让程序质量更容易得到保障和维护。&lt;/p&gt;
+&lt;p&gt;每门程序设计语言都有其最佳实践的领域，对于 Python 来说，其适合于那些对执行效率不敏感，逻辑处理
+相对复杂的场景，典型的就是构建Web应用啦（君不见 &lt;a class="reference external" href="https://www.djangoproject.com/"&gt;Django&lt;/a&gt; , &lt;a class="reference external" href="http://www.tornadoweb.org/"&gt;Tornado&lt;/a&gt; , &lt;a class="reference external" href="http://flask.pocoo.org/"&gt;Flask&lt;/a&gt; , etc）。啊，
+对了，Python 用于快速原型构建也是出了名的好用。事实上， Python 因为其对C颇强的亲和力，在一些
+需要复杂逻辑处理和高性能的领域也有很多的建树，例如科学计算领域（强大的 &lt;a class="reference external" href="http://www.scipy.org/"&gt;SciPy&lt;/a&gt; 和 &lt;a class="reference external" href="http://numpy.scipy.org/"&gt;NumPy&lt;/a&gt; ）和
+图像处理领域（很有用的 &lt;a class="reference external" href="http://www.pythonware.com/products/pil/"&gt;PIL&lt;/a&gt; ）。&lt;/p&gt;
+&lt;p&gt;只要实际使用过 Python 去解决问题，很快会喜欢上这门语言。在学习 Python 之初，我写过好一些小脚本
+来自娱自乐，用来管理资源，以及获取资源（有爱的漫画和性感美女图是不能少的，lol）。而现在，自己也
+在工作中使用 Python 来处理实际问题。在使用 Python 编程的实践中，逐渐感悟到了一个 Python 程序
+设计最佳实践，扁平化设计。当然，这所谓的最佳实践仅是个人的愚见，归纳出来有益身心健康哈。 :-)&lt;/p&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h2&gt;扁平化设计&lt;/h2&gt;
+&lt;p&gt;通过良好的设计，使用 Python 编写的代码一般都能具有较好的模块性，即对复杂度的正常封装，以及定义
+清晰的调用接口。宏观来看，有了定义良好的模块，我们需要解决的问题还有很多，模块间协作和模块间通信
+都必须考虑。对于这类问题，存在许多不同的设计和解决方案。在过往不多的程序设计经验里，包括察看他人
+的设计（各种不同开源框架代码），以及自己的点滴实践体会，随着思考深入，也开始有了自己见解。现在能
+察觉到，扁平化设计为这类问题提供了一个相对简单清晰的解决模式。&lt;/p&gt;
+&lt;p&gt;假设现在有若干个功能模块，包括模块A、模块B和模块C，模块间会有程度不同的交互通信。要如何进行处理？
+最简单的想法是，让各模块保持独立，当模块A需要和模块C通信时，直接进行特定的交互就行了。乍看起来，
+这样的实现确实很简单，但弊端是，我们要为各模块单独定义特定的通信接口（函数或方法），如果需要交互
+的模块数量很多，模块间的交互实现必然趋向复杂，我们还必须要对众多分散于各模块的通信处理实现进行管
+理。为了从这些复杂度中解放出来，我们需要对这一想法做一些升级。&lt;/p&gt;
+&lt;p&gt;思考一会便能想到，应该可以设置一个中心模块来对模块间的交互进行统一管理。假设现在有一个主干模块P，
+当模块A需要和模块C通信时，首先通过主干模块P获得与模块C交互的接口，然后就能通过该接口与模块C进行
+通信。多了一个间接操作，实现似乎变得更为烦琐。事实上，主干模块P的存在确实增加了模块间通信的约束
+性，但这并没有阻碍模块间的有效通信，我们可以在主干模块中对程序的整体运行进行统一的管理和设置，
+获得的好处是，降低了可能出现的模块间通信复杂度，增加了模块局部变化及功能扩展时的应对能力，从而
+保持了程序整体设计的整洁清晰。扁平化设计的中心思想就在于此，遵守着浅分层的原则，使模块间交互的
+处理和抽象尽可能的减少。程序可能会不断膨胀，扁平化设计的简洁性则避免了复杂度的失控增长，简洁而
+漂亮。&lt;/p&gt;
+&lt;p&gt;扁平化设计还有一个优点，那就是可以很容易的实现可见原型，然后基于原型持续进行进行快速迭代，完善
+具体的实现以及进行功能扩展，而测试也可以与构建同步进行。说起来，这些也都是使用 Python 编程的优势
+哈。&lt;/p&gt;
+&lt;p&gt;我认为 Python 这类动态语言很适合扁平化设计，没有“烦人”的类型定义，配合只关心行为的 Duck Typing
+特性，让程序可以保持简洁和灵活性。扁平化设计的难点之一是，主干模块不应该与功能模块有过多耦合，
+而各功能模块则需要“知道”关于主干模块和程序运行的相关信息， Python 出色的动态特性为之提供了足够
+的支持，免去很多细节的处理。同时， Python 代码可读性高的优点可以让我们较快的了解程序的实现。只要
+理解了整体的设计思想，遵循扁平化设计的程序会具有相当高的清晰性，也就是说，扁平化设计可以让程序员
+更容易地掌握程序整体的运作，从而更好地去理解具体的内部逻辑。&lt;/p&gt;
+&lt;p&gt;当然，扁平化设计不是也不可能是万事适用的设计准则，其也具有许多的局限性。限于自己资质和经历有限，
+还需要更多的实践才能对扁平化设计有更多的认识。但是我依旧认为（起码现在），扁平化设计是简洁编程
+的一种体现，而且很适合用于 Python 程序设计。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h2&gt;最后&lt;/h2&gt;
+&lt;p&gt;从程序设计的角度来看，简洁清晰的代码通常更为优雅，这意味着可以更好的应对变化，可以无拘束地作出许
+多有趣实效的设计，而不需要拘泥于一些特定思想或模式（上面论述的扁平化设计便是一例）。 Python 朴实
+干净的语法，出色的动态特性，开放的社区文化，不完美但强大的标准库，以及众多优秀的第三方库，让我们
+在解决问题时，不需要在语言和底层实现上纠缠太多，专注于问题的本身，从而可以迅速开始创造生产力。在
+使用 Python 进行程序设计时，简洁编程之道可以说时刻都在影响着我们的思维。&lt;/p&gt;
+&lt;p&gt;少即是多， Python 的“无拘束”没有强行附加什么精神负担或者枷锁，为了乐趣，为了实效。&lt;/p&gt;
+&lt;p&gt;辽阔的星空就在眼前，只待那好奇的心去进行探索。&lt;/p&gt;
+&lt;/div&gt;
+</content>
+  </entry>
+  <entry xml:base="http://www.pywave.com/feed.atom">
+    <title type="text">记配置管理的相关设计和想法</title>
+    <id>http://www.pywave.com/2013/02/03/some-ideas-and-design-of-the-configuration-management</id>
+    <updated>2013-02-03T00:00:00Z</updated>
+    <link href="http://www.pywave.com/2013/02/03/some-ideas-and-design-of-the-configuration-management" />
+    <author>
+      <name>Jason Lai</name>
+    </author>
+    <content type="html">&lt;p&gt;最近工作的主旋律是围绕着监控和配置系统的构建进行相关设计和实现，包括原始数据的收集和传输，汇总数据
+的处理、存储和展示，以及相关配置的设置和分发，等等系列相关任务。对于这个相对较大型的项目，需要
+多个程序相互协作，且对整体运行的可靠性和稳健性都有很高的要求。面对此类高要求项目，感到颇具挑战性，
+故这段时间是开足马力地投入到开发中去。&lt;/p&gt;
+&lt;p&gt;在项目实现的过程中，除了接触到许多新鲜的工具和技术外，感悟最深的是，如何宏观地看待程序设计，让整体
+项目保持足够的简单，以便组合各程序一起去完成大规模的任务。在此想记录工作中的一些思考和想法。不会
+展示具体实现的详细，主要是程序设计时思维的变化过程。&lt;/p&gt;
+&lt;p&gt;配置管理是项目的一个重点和难点，因为我们设想其为公司内部 Python 项目的配置管理中心 &lt;a class="footnote-reference" href="#id8" id="id2"&gt;[1]&lt;/a&gt; 。配置管理
+中心，单从字面意思就知道其用处，但要实现一个高可靠和高可用的配置管理中心绝对不是一件简单的事情。&lt;/p&gt;
+&lt;p&gt;基于尽早完成第一版可用程序和 &lt;a class="reference external" href="/2012/07/23/hello-modularity/#kiss"&gt;KISS&lt;/a&gt; 的原则，我们决定使用 &lt;a class="reference external" href="http://thrift.apache.org/"&gt;Thrift&lt;/a&gt; 来进行 RPC 通信,先完成一个基础的
+类 C/S 模型的配置管理中心程序。配置管理中心的整体功能由两个独立程序（配置的设置和分发功能）来实现，
+如此设计的原因有几个，这里就不表述了。下面的记述，就是我在处理配置设置和分发程序相关逻辑时的一些
+思考。&lt;/p&gt;
+&lt;p&gt;对于配置数据，两个程序各自的处理逻辑相当一目了然。一个程序利用配置数据（只读），自身作为服务器，
+对外提供配置分发的功能，下面我会称之为 &lt;cite&gt;分发程序&lt;/cite&gt; 。另一个程序生成和控制配置数据（读写），处理
+创建、更新和删除等典型的 &lt;a class="reference external" href="http://en.wikipedia.org/wiki/Create,_read,_update_and_delete"&gt;CRUD&lt;/a&gt; 操作，下面我会称之为 &lt;cite&gt;控制程序&lt;/cite&gt; 。&lt;/p&gt;
+&lt;p&gt;嗯，事情就是这样，问题也算是清晰，但是，如何让两独立程序对配置信息进行更好的通信交互？看似很简单
+的问题，实际中还是需要花一番时间解决。在具体的处理里，从开始的配置文件驱动，到后来的数据库驱动，
+我的想法有很大的变化。&lt;/p&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h2&gt;配置文件驱动&lt;/h2&gt;
+&lt;p&gt;项目启动后，便开始考虑程序的具体实现。当时没想太多其他的东西，非常直接，配置文件嘛，当然就是用文件
+来记录。接着想到的念头是，配置的逻辑可能会很复杂，应该使用一种高可读性的配置文法去记录配置。好吧，
+这种角色非 &lt;a class="reference external" href="http://yaml.org/"&gt;YAML&lt;/a&gt; 莫属啦。然后，就到了费脑筋的事情啦。&lt;/p&gt;
+&lt;p&gt;&lt;cite&gt;控制程序&lt;/cite&gt; 和 &lt;cite&gt;分发程序&lt;/cite&gt; 相互独立， &lt;cite&gt;控制程序&lt;/cite&gt; 在变更了配置后，应该让 &lt;cite&gt;分发程序&lt;/cite&gt; 知道，让其去获取
+最新的配置。诚然，两个程序间需要交互通信。但是，考虑到整体项目还包含多个程序，我不想为这两个程序
+额外引入一套独立的 &lt;a class="reference external" href="http://en.wikipedia.org/wiki/Inter-process_communication"&gt;IPC&lt;/a&gt; 机制，希望能让程序间的交互尽量保持简单。&lt;/p&gt;
+&lt;p&gt;应该怎么做呢？其实再想一下就能搞清楚状况。关键就在两个程序对于配置数据的处理逻辑上，一个会对配置
+进行读写操作，但是另一个则只对配置进行读操作。对的，其实解决方法的思路很简单，只要 &lt;cite&gt;控制程序&lt;/cite&gt; 能
+在修改配置数据后对外标识配置已改变， &lt;cite&gt;分发程序&lt;/cite&gt; 可以按照一定时间周期轮询监测配置是否有变更，从而就
+能够及时更新配置，使配置数据的分发保持可用状态。&lt;/p&gt;
+&lt;p&gt;事实上，我们可以简单粗暴地实现配置的分发可用，即忽略配置数据是否被修改， &lt;cite&gt;分发程序&lt;/cite&gt; 在每一次轮询
+监测时都初始化一次全部配置，这样确实可以保证 &lt;cite&gt;分发程序&lt;/cite&gt; 维护着最新的配置数据。&lt;/p&gt;
+&lt;p&gt;显然，这类弊端明显的实现是不会得到同意的，我们应该更优雅的实现上面所描述的思路。更好的想法是，确定
+一个存放配置文件的目录，根据文件的最近修改时间（即 mtime ）来判断配置是否有变更，这样唯有当一个配置
+文件真正被修改后， &lt;cite&gt;分发程序&lt;/cite&gt; 才会 reload 该配置。&lt;/p&gt;
+&lt;p&gt;为了更好的管理配置，不同的配置文件可以存放在不同的路径中，以目录层级进行逻辑区分。并且，在底层目录
+存放一个 config.yml 中心配置文件，其将作为 &lt;cite&gt;控制程序&lt;/cite&gt; 和 &lt;cite&gt;分发程序&lt;/cite&gt; 的通信桥梁，汇总所有配置文件的
+存放路径以及其它的更多信息。&lt;/p&gt;
+&lt;p&gt;通过监测这中心配置文件，我们可以很容易的获取有效配置文件的相关信息。其设置的格式很简单，如下所示:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+PATHS:
+    .:
+        - python.yml
+        - dclist.yml
+    host:
+        cn:
+            - info.yml
+        usa:
+            - info.yml
+    database:
+        - mongodb.yml
+        - mysql.yml
+        - redis.yml
+&lt;/pre&gt;
+&lt;p&gt;上面展示的是 config.yml 中配置路径相关的信息， &lt;cite&gt;分发程序&lt;/cite&gt; 可以很方便的由此获取所有有效配置文件的
+路径信息。下面的 transform 函数利用递归，可以将 config.yml 中的路径信息转换为 python 中的 list 来
+存储。简单的处理，但也很有趣。&lt;/p&gt;
+&lt;pre class="code python literal-block"&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;yaml&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;transform&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="n"&gt;paths&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
+    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;_walk&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;prefix&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;iteritems&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;isinstance&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;dict&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+                &lt;span class="n"&gt;_walk&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;prefix&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s"&gt;'/'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="nb"&gt;isinstance&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;list&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+                &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;_walk&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="s"&gt;''&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt; &lt;span class="n"&gt;prefix&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s"&gt;'/'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;v&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+            &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="n"&gt;paths&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;prefix&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;_walk&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;''&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;paths&lt;/span&gt;
+
+&lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;'config.yml'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;conf_dict&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;yaml&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+    &lt;span class="n"&gt;paths&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;transform&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;conf_dict&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;'PATHS'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;/pre&gt;
+&lt;p&gt;利用 transform 函数将 config.yml 配置转换后，可以得到:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+['host/cn/info.yml',
+ 'host/usa/info.yml',
+ './python.yml',
+ './dclist.yml',
+ 'database/mongodb.yml',
+ 'database/mysql.yml',
+ 'database/redis.yml']
+&lt;/pre&gt;
+&lt;p&gt;获得有效配置文件的路径后，就可以初始化各配置文件的相关上下文信息，包括我们需要的文件最近修改时间。
+搭配其余的一些配置元信息， &lt;cite&gt;分发程序&lt;/cite&gt; 就可以按照确定的时间周期轮询监测配置文件啦。&lt;/p&gt;
+&lt;p&gt;OK，整体的思路大概就是这样，不复杂，容易实现，不过事情永远都是变化大于计划。很快我又否定了这个配置
+文件驱动的解决方案，转向使用数据库来实现。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id4"&gt;
+&lt;h2&gt;数据库驱动&lt;/h2&gt;
+&lt;p&gt;从配置文件转到数据库，原因很简单也很自然， &lt;cite&gt;控制程序&lt;/cite&gt; 对配置的处理主要是 CRUD 操作，使用数据库会
+更加方便。更重要的，现在的初版配置管理中心， &lt;cite&gt;分发程序&lt;/cite&gt; 只需实现为单机部署程序就行了，但是不排除
+未来会将其改进为分布式程序。到时候，如果后端是使用数据库（ MySql ）管理配置数据，可以很容易的过渡。
+反之， ... ^!*&amp;amp;^%%!&amp;amp;%^&amp;amp;$*% ... ，我都懒得去想了。&lt;/p&gt;
+&lt;p&gt;之所以没有一开始就使用数据库方案，主要是因为预想到某些配置会很复杂，比较难用 schema 进行描述。如
+Host 数据收集的配置，总的可用配置项会很多，而单个配置项也会有多个不同选择，每部主机会根据实际情况
+定制特定的配置。使用 YAML 来进行设置会很简单，能适应不同的状况，但如果想用数据库的 table 来结构化
+表示，这个 ... 就太恐怖了。&lt;/p&gt;
+&lt;p&gt;还好，后来自己也转过了弯来，谁说数据库 table 不能存储 YAML 文本的？只要 &lt;cite&gt;控制程序&lt;/cite&gt; 保证 YAML 文本
+的正确性，直接使用 text field 就可以了。也就是说，使用 text field 来存储 YAML 配置数据，一行数据
+即一个独立配置（如一个 Host 的配置）。如此一来，对于那些具有复杂逻辑的配置，就可以使用数据库进行
+存储啦。当然，对于那些逻辑简单的配置，只需要使用数据库固定的 schema 表示就足够了。&lt;/p&gt;
+&lt;p&gt;确定可以使用数据库来存储配置数据后，老问题又浮出水面了，如何让 &lt;cite&gt;分发程序&lt;/cite&gt; 知道配置数据已经变更了。
+在上面的配置文件驱动里，我们使用文件的最近修改时间来让 &lt;cite&gt;分发程序&lt;/cite&gt; 判断配置的状态。显然，我们可以
+采用同样的策略，通过设置一个 is_modified 域来标识该配置是否有改动（0 为 False， 1 为 True）。如此，
+&lt;cite&gt;分发程序&lt;/cite&gt; 每次监测只需检索出那些 is_modified 域为 1 的配置项，根据这些配置项更新缓存，然后再将
+数据库中这些数据项的 is_modified 域设置为 0，即可完成监测操作。&lt;/p&gt;
+&lt;p&gt;但是，仅靠 is_modified 域还是不够。为什么？因为在数据库中，当一些配置被删除掉了，这些配置不会留下
+任何痕迹， &lt;cite&gt;分发程序&lt;/cite&gt; 也就无法知道有什么数据项被删除了 &lt;a class="footnote-reference" href="#id9" id="id5"&gt;[2]&lt;/a&gt; 。&lt;/p&gt;
+&lt;p&gt;为了解决这个问题，考虑了几个解决方案。其中包括，让 &lt;cite&gt;分发程序&lt;/cite&gt; 每隔一天就完整载入一次所有配置，从而
+就避免了配置数据的遗漏，但是这个解决方法使得配置的有效性会有较长的延迟，无法接受，抛弃。&lt;/p&gt;
+&lt;p&gt;最后采用的解决方法是，使用懒惰删除。类似于 is_modified 域，我们再定义一个 is_deleted 域，用来标识
+该配置是否在 &lt;cite&gt;控制程序&lt;/cite&gt; 中被删除了。也就是说，在 &lt;cite&gt;控制程序&lt;/cite&gt; 中删除某些配置时，实质上不会真的删除该
+配置，只是将该配置的 is_deleted 域设置为 1。这样一来， &lt;cite&gt;分发程序&lt;/cite&gt; 除了检索 is_modified 域的操作外
+（如上面所述），还需要检索那些 is_deleted 域为 1 的配置项，更新缓存的配置数据，最后将数据库中的这些
+数据项真正删除掉。这时候，才算最终完成了监测操作。&lt;/p&gt;
+&lt;p&gt;上面的处理逻辑听起来貌似有点复杂，但实际上整体的操作还是很简单，主要是我的语言描述不够透彻简洁。
+我想，还是代码更来得简单易懂。下面的代码展示了 &lt;cite&gt;分发程序&lt;/cite&gt; 初始化和更新操作的逻辑处理。&lt;/p&gt;
+&lt;pre class="code python literal-block"&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;yaml&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;config&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;
+
+&lt;span class="n"&gt;Configs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;setup_config&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="k"&gt;global&lt;/span&gt; &lt;span class="n"&gt;Configs&lt;/span&gt;
+
+    &lt;span class="n"&gt;sql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT * FROM `conf_info` WHERE `is_deleted` != 1&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;infos&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;infos&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;Configs&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;title&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;yaml&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;update_config&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="k"&gt;global&lt;/span&gt; &lt;span class="n"&gt;Configs&lt;/span&gt;
+
+    &lt;span class="c"&gt;# 处理 deleted 的数据项&lt;/span&gt;
+    &lt;span class="n"&gt;select_deleted_sql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT * FROM `conf_info` &amp;quot;&lt;/span&gt;
+                          &lt;span class="s"&gt;&amp;quot;WHERE `is_deleted` = 1&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;infos&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;select_deleted_sql&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;infos&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;del_sql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;DELETE FROM `conf_info` WHERE `id` = &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;infos&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="c"&gt;# 更新 Configs，然后将数据项从数据库中真正删除掉&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;title&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;Configs&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="k"&gt;del&lt;/span&gt; &lt;span class="n"&gt;Configs&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;title&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;execute&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;del_sql&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;id&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="c"&gt;# 处理 modified 的数据项&lt;/span&gt;
+    &lt;span class="n"&gt;select_modified_sql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT * FROM `conf_info` &amp;quot;&lt;/span&gt;
+                           &lt;span class="s"&gt;&amp;quot;WHERE `is_modified` = 1&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;infos&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;select_modified_sql&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;infos&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;udp_sql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;UPDATE `conf_info` SET `is_modified` = '0' &amp;quot;&lt;/span&gt;
+                   &lt;span class="s"&gt;&amp;quot;WHERE `id` = &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;infos&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+            &lt;span class="c"&gt;# 更新 Configs，然后将数据项的 is_modified 域修正为 0&lt;/span&gt;
+            &lt;span class="n"&gt;Configs&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;title&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;  &lt;span class="n"&gt;yaml&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;execute&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;udp_sql&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;id&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;
+&lt;p&gt;上面的代码就是 &lt;cite&gt;分发程序&lt;/cite&gt; 中，监测线程实际实现的大概逻辑。看到这里，你大概有点忍耐不住要嚷嚷了，
+明明在使用数据库，当有请求时，直接向数据库查询配置数据，处理后返回就是啦。明明可以简单的实现，为
+什么要动态监测配置数据，硬生生在程序中维护多一份配置数据。&lt;/p&gt;
+&lt;p&gt;简单的想，“请求，查询，处理，返回”，这样的处理逻辑当然是成立的。但有得就有失，其代价是相对较高的
+计算资源以及缓慢的数据库查询。公司的基础业务是 CDN 服务，可以预想未来的服务器数量会不断增长，前瞻
+性的考虑配置分发服务器的性能问题是有必要的。当然，这个话题还可以延伸很长。我只想说，很多东西是复杂
+还是简单，不是一句话就能说完全的。上面所说的方案能解决问题，而且整个概念并不复杂，实际的代码实现也
+确实很简单，也可以复用。所以，实际就这样做了。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id6"&gt;
+&lt;h2&gt;还有不足&lt;/h2&gt;
+&lt;p&gt;细心点就能发现，上面数据库驱动中所说的解决方法还是存在着不足， &lt;cite&gt;分发程序&lt;/cite&gt; 对于配置更新的监测会有
+漏洞，使得程序缓存的配置信息与数据库的配置信息不完全一致。&lt;/p&gt;
+&lt;p&gt;在 &lt;cite&gt;分发程序&lt;/cite&gt; 使用了 info.title 来做 key 缓存所有的配置信息，假设该配置项的 title 被 &lt;cite&gt;控制程序&lt;/cite&gt; 修改
+了。当然，其 is_modified 域会被标识为 1， &lt;cite&gt;分发程序&lt;/cite&gt; 在监测配置项时会对其进行更新。但是因为 title 被
+修改了， &lt;cite&gt;分发程序&lt;/cite&gt; 将会用新的 title 做 key 缓存该配置信息，而旧的 title 所缓存的配置信息却还保留在
+内存中。&lt;/p&gt;
+&lt;p&gt;解决方法是，每隔一天（或更长的时间）进行一次全面的更新，校正可能的“脏配置数据”，保证 &lt;cite&gt;分发程序&lt;/cite&gt; 中
+配置信息的准确性和同步性。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id7"&gt;
+&lt;h2&gt;不是总结的总结&lt;/h2&gt;
+&lt;p&gt;在工程上应该尽可能使用简单实用的方法。&lt;/p&gt;
+&lt;p&gt;简单清晰的实现方案，更容易理解和构建，使得不可能避免的 Debug 更为轻松（可能发生在一年后或者三天后），
+也让程序的重构和改进变得更为轻松。总的来说，就是让我们的生活更舒适。 :-)&lt;/p&gt;
+&lt;hr class="docutils" /&gt;
+&lt;table class="docutils footnote" frame="void" id="id8" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id2"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;最开始想使用 &lt;a class="reference external" href="http://zookeeper.apache.org/"&gt;ZooKeeper&lt;/a&gt; ，不过考察后认为还是自行研发更符合实况。&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;table class="docutils footnote" frame="void" id="id9" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id5"&gt;[2]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;但是，使用配置文件驱动可以知道，文件跟数据库还是不一样的。&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+</content>
+  </entry>
+</feed>
+
