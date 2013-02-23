@@ -3,7 +3,7 @@
   about 相关设置 
 */
 .about
-img {
+.gravatar {
     margin: 16px;
     float: right;
 }
