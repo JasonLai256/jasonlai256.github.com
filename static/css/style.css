@@ -3,7 +3,11 @@
   about 相关设置 
 */
 .about
+<<<<<<< HEAD
 img {
+=======
+.gravatar {
+>>>>>>> 87a76526e3735248206deedefdc4be81194acaff
     margin: 16px;
     float: right;
 }
