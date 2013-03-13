@@ -1,6 +1,6 @@
 
 /*
-  about 相关设置 
+  about 相关设置
 */
 .about
 .gravatar {
@@ -25,7 +25,7 @@
 }
 
 /*
-  header, body, section, p 相关设置 
+  header, body, section, p 相关设置
 */
 header {
     margin-top: 38px;
@@ -66,7 +66,7 @@ p {
 }
 
 /*
-  section-unit 相关设置 
+  section-unit 相关设置
 */
 .section-unit {
     padding: 15px;
@@ -266,4 +266,55 @@ h1 {
     -webkit-border-radius: 12px;
     -moz-border-radius: 12px;
     border-radius: 12px;
+}
+
+
+/*
+  tagcloud 相关设置
+*/
+.tag_list {
+    min-height: 300px;
+    padding: 30px 40px;
+}
+
+.tag_list ul {
+    list-style:none;
+}
+
+.tagcloud:after {
+    clear: both;
+    content: ".";
+    display: block;
+    height: 0;
+    visibility: hidden;
+}
+
+.tag_list li {
+    float: left;
+    margin-bottom: 10px;
+    margin-right: 10px;
+    width: 200px;
+}
+
+.tag_list a.tag {
+    border-radius: 5px 5px 5px 5px;
+    color: #B77B1B;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 15px;
+    font-weight: normal;
+    height: 19px;
+    line-height: 19px;
+    margin-right: 8px;
+    overflow: hidden;
+    padding-left: 8px;
+    padding-right: 8px;
+    text-decoration: none;
+    vertical-align: middle;
+    /* width: auto; */
+}
+
+.tag_list a.tag:hover {
+    background-color: #EEEEEE;
+    text-decoration: none;
 }
