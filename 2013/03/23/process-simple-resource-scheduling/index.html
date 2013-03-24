@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>处理简单的资源调度 - Thought Atlas</title>
+    <link rel="alternate" href="/feed.atom" title="Recent Blog Posts" type="application/atom+xml">
+    <link type="text/css" href="/static/css/bootstrap.css" rel="stylesheet">
+    <link type="text/css" href="/static/css/style.css" rel="stylesheet">
+    <link type="text/css" href="/static/css/tango.css" rel="stylesheet">
+    
+<link type="text/css" href="/static/_pygments.css" rel="stylesheet">
+
+</head>
+<body data-offset="50">
+  <header class="container">
+    <div class="title">
+      <a class="title" href="/">Thought Atlas</a>
+      <nav class="pull-right">
+	<ul class="primary nav nav-pills">
+	  <li><a href="/">blog</a>
+	  <li><a href="/archive/">archive</a>
+	  <li><a href="/tags/">tags</a>
+	  <li><a href="/about/">about</a>
+	</ul>
+      </nav>
+    </div>
+    <p>tries to make easy things easy and hard things possible.</p>
+  </header>
+
+  <div class="container">
+    <div id="content">
+<div class="article-unit" >
+  <h1 class="title">处理简单的资源调度</h1>
+
+
+  
+  <p class="entry-date">written on 2013年3月23日星期六
+  
+
+  <p>要在中国“扭曲“的网络环境中发展 <a class="reference external" href="https://www.cdnzz.com/">CDN 服务</a> ，需要付出许多额外的努力，其中，敏感信息是不得不面对的
+事情。在去年，我们还一度认为只要网站备案了，或者接入时经过初审通过，流量信息应该就是足够可靠的了。
+结果在年末时出了些不大不小的烦人事情，被迫临时无限期停止公众的注册活动。也没办法，需要将危机看作
+转机，我们决定继续将时间放在基础服务的开发上，并开始专注企业客户的服务。</p>
+<p>时间一下子来到了3月份，许多新功能陆续上线，团队和开发方面也有了中长期规划。于是，决定在近期再次向
+公众开放我们的 CDN 服务。有过'掉坑'的经验，我们明白到除了好的服务和功能外，还是需要一番额外的机制。
+其中，也就是本文有所探讨的，我们需要快速整出一套简单可用的自动化信息审核系统，以降低开放的风险。这
+是一个神奇的国度才有的特殊需求，无奈但必须。</p>
+<div class="section" id="id2">
+<h2>整体情况</h2>
+<p>坚持团队一贯的尽早完成第一版可用程序和 <a class="reference external" href="/2012/07/23/hello-modularity/#kiss">KISS</a> 原则，我们希望以简单的想法和最快的速度去实现该系统。
+最后确定的实现方案也确实很简单，主要的实现包括一个中央调度进程，以及进行具体处理的 Workers 进程。</p>
+<p>调度中心统一接收各节点推送过来的 URLs，对接收的 URLs 进行过滤和排重等处理，实时维护一簇待检测内容
+的 URLs，并提供 fetch 和 push 操作作为 URLs 的调度分发接口。负责具体检测任务的 Workers 进程向中心
+取 URLs 进行检测，检测完成后，再将已检测的 URLs 信息推送回中心进行处理，中心会将已检测的 URLs 归档
+为已处理。还有一点很重要，因为 URLs 的内容可能会有变动，已处理的 URLs 存在相应的 timeout 时间，保证
+已检测的 URLs 在超过 timeout 时间后会再次进行内容检测。</p>
+<p>之所以要区分中央调度进程和 Workers 进程，是考虑到当内容检测的规模变得庞大时，可以通过水平扩展机器的
+数量，简单地启动更多的 Workers 进程来解决问题。因为 URLs 的管理分发逻辑都在调度中心实现，调度中心
+可以保证待处理 URLs 能安全公平地分发到各 Worker 进程去，在执行完内容检测后，再归并汇总各 Workers 推
+送回来的内容检测结果，形成一个可扩展的 map-reduce 体系结构。</p>
+</div>
+<div class="section" id="id3">
+<h2>谈谈资源调度</h2>
+<p>上面大概描述了系统的整体情况，下面会接着讲述一些关于调度中心实现的细节，也就是本文的主题，资源调度
+的相关处理。为了更好的理解，本文出现的代码只包含基本的处理逻辑，忽略了相关出错处理，具体 RPC 实现以及
+特殊情况处理的逻辑。</p>
+<p>调度中心需要对 URLs 数据进行管理，考虑了几个方面，最后决定使用 <a class="reference external" href="http://code.google.com/p/leveldb/">LevelDB</a> 来作数据持久化。LevelDB 具
+有优秀的性能表现，基于简单的 key-value 操作，其高效的顺序读写功能也能让程序获益，而且是 Disk 型存储
+让我们不需担心资源问题。不足的是，同一时间里，一个 LevelDB 数据库只能被一个进程操控，不过还好多线程
+不受限制。因为调度中心和 Workers 进程的关系就是纯粹的 client-server 模式，调度中心对数据库进行统一
+管理，同时对 Workers 提供分发和汇总的接口，利用多线程就能将调度中心实现的很好。</p>
+<p>基于简单实现和维护的思想，调度中心将只维护两个数据库，包括 done_db 和 todo_db。其中 done_db 存放已
+完成内容检测的 URLs，而 todo_db 存放待进行检测的 URLs，这些都由调度中心来进行管理。下面的代码是数据
+库和一些相关变量的初始化逻辑。</p>
+<pre class="code python literal-block">
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Lock</span>
+<span class="kn">import</span> <span class="nn">settings</span>
+
+<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c"># Initial some useful arguments</span>
+    <span class="c"># ...</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">url_timeout</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">URL_TIMEOUT</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">block_len</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">BLOCK_LEN</span>
+
+    <span class="c"># 初始化相关 db 以及对应的 lock</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">done_db</span> <span class="o">=</span> <span class="n">leveldb</span><span class="o">.</span><span class="n">LevelDB</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">done_db_path</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">todo_db</span> <span class="o">=</span> <span class="n">leveldb</span><span class="o">.</span><span class="n">LevelDB</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">todo_db_path</span><span class="p">)</span>
+    <span class="c"># 使用 Lock 保证线程对 LevelDB 的读写具有同步性</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">done_db_lock</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">todo_db_lock</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
+</pre>
+<p>各节点会不停地将 URLs 推送过来，其中必然存在大量的冗余。利用 done_db 和 todo_db 已存储的数据，可以
+将还没有被检测过或已 expire 了的 URLs 过滤出来，然后写入 todo_db 中，让 Workers 进程可以获取到。</p>
+<p>简单的将 url 作为 LevelDB 的键（key），通过检测 url 是否存在于两个数据库中，就可以判断该 url 是否
+已被检测过或正等待被检测。需要解决的特殊情况是，如何简单地判断出一个 url 已被检测过但已经 expire ，
+这类 URLs 需要再次进行内容检测。当然，有很多方法可以解决这个问题。在刚开始实现时，我把这问题想复杂
+了，好一会才意识到，我需要的是一个简单的实现方法。结合 LevelDB 的 key-value 特性，综合考虑性能和
+实现复杂度，我决定从数据的存储结构下手:</p>
+<pre class="literal-block">
+done_db 存储结构:  (md5_key, timestamp_value) 键值对
+todo_db 存储结构:  (md5_key, url_value) 键值对
+</pre>
+<p>两个数据库都使用 url 的 MD5 值来做 Key，但根据具体的使用方式来存放不同的值。todo_db 的值为 url 可以
+方便 fetch 接口的调度操作。而 done_db 的值为时间戳，就是该 url 的入库时间，这样，通过检测当前的时间
+戳和 done_db 中的 timestamp_value 就可以判断 url 是否已 expire 。基于简单的数据存储结构，代码的实现
+当然也是很简单。</p>
+<pre class="code python literal-block">
+<span class="k">def</span> <span class="nf">url_existed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url_md5</span><span class="p">,</span> <span class="n">now_time</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;判断 url 在 todo_db 和 done_db 中是否存在。&quot;&quot;&quot;</span>
+    <span class="n">todo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">existed_in_todo_db</span><span class="p">(</span><span class="n">url_md5</span><span class="p">)</span>
+    <span class="n">done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">existed_in_done_db</span><span class="p">(</span><span class="n">url_md5</span><span class="p">,</span> <span class="n">now_time</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">todo</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">bool</span><span class="p">(</span><span class="n">done</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">existed_in_todo_db</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url_md5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;监测 url_md5 是否存在于 todo_db 中。
+    若存在，返回对应的值，否则，返回 None。
+    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">todo_db</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">url_md5</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+<span class="k">def</span> <span class="nf">existed_in_done_db</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url_md5</span><span class="p">,</span> <span class="n">now_time</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;监测 url_md5 是否存在于 done_db 中。
+    若存在，且该值的存放时间还没超过 timeout 时间，那么返回对应的值，否则，返回 None。
+    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">done_db</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">url_md5</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">now_time</span> <span class="o">-</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">url_timeout</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">value</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">pass</span>
+</pre>
+<p>有了上面抽象出来的 url_existed 方法，可以很容易判断一个 url 是否归类为待处理。接下来，需要实现接收
+各节点推送 URLs 的处理逻辑了。对 URLs 进行遍历，判断是否 url_existed，若是，就写入到 todo_db 中，
+否则，忽略之。就这么简单。</p>
+<p>因为 LevelDB 支持批量写操作，先将过滤出来的 URLs 收集起来，然后集中写入到 todo_db 中去。</p>
+<pre class="code python literal-block">
+<span class="k">def</span> <span class="nf">handle_urls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">urls</span><span class="p">):</span>
+    <span class="n">now_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+
+    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">done_db_lock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">todo_db_lock</span><span class="p">:</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="n">leveldb</span><span class="o">.</span><span class="n">WriteBatch</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
+            <span class="n">md5_value</span> <span class="o">=</span> <span class="n">calculate_md5</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">url_existed</span><span class="p">(</span><span class="n">md5_value</span><span class="p">,</span> <span class="n">now_time</span><span class="p">):</span>
+                <span class="n">batch</span><span class="o">.</span><span class="n">Put</span><span class="p">(</span><span class="n">md5_value</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">todo_db</span><span class="o">.</span><span class="n">Write</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre>
+<p>解决了待处理 URLs 的入库问题，调度中心还需要实现 fetch 和 push 接口，用于调度分发待处理 URLs 给
+各 Workers 进程，让 Workers 进程可以通过接口来获取 URLs 进行检测，然后将完成了检测的 URLs 推送回来。</p>
+<p>LevelDB 高效简单的顺序读写操作是非常的顺手。配合 done_db 和 todo_db，我们可以很容易实现这两个接口。</p>
+<pre class="code python literal-block">
+<span class="k">def</span> <span class="nf">fetch_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;从 todo_db 中返回 block_len 个待处理 urls.&quot;&quot;&quot;</span>
+    <span class="n">rv</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">batch</span> <span class="o">=</span> <span class="n">leveldb</span><span class="o">.</span><span class="n">WriteBatch</span><span class="p">()</span>
+    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">todo_db_lock</span><span class="p">:</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">url</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">todo_db</span><span class="o">.</span><span class="n">RangeIter</span><span class="p">(</span><span class="n">fill_cache</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+            <span class="n">rv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="n">keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_len</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="n">keys</span><span class="p">:</span>    <span class="c"># 当 keys 有被填充时，进行 done_db 的相关操作</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+                <span class="n">batch</span><span class="o">.</span><span class="n">Delete</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">todo_db</span><span class="o">.</span><span class="n">Write</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rv</span>
+
+<span class="k">def</span> <span class="nf">push_done_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">urls</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;根据获取的 urls 给 done_db 进行批量写入。&quot;&quot;&quot;</span>
+    <span class="n">now_time</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+    <span class="n">batch</span> <span class="o">=</span> <span class="n">leveldb</span><span class="o">.</span><span class="n">WriteBatch</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
+        <span class="n">md5_value</span> <span class="o">=</span> <span class="n">calculate_md5</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">batch</span><span class="o">.</span><span class="n">Put</span><span class="p">(</span><span class="n">md5_value</span><span class="p">,</span> <span class="n">now_time</span><span class="p">)</span>
+    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">done_db_lock</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">done_db</span><span class="o">.</span><span class="n">Write</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre>
+<p>好的，到现在，调度中心的任务就实现的差不多了，也就那么点东西，没什么复杂。好吧，实际上，实现整个
+系统的过程中，还是费了不少的脑力，也出现了一些没预料到的状况。现在呈现的解决方案，跟最初设想的解决
+方案相比，已经是完全变了个样。很有趣。</p>
+</div>
+<div class="section" id="id4">
+<h2>总结</h2>
+<p>一套简单可行的解决方案非常珍贵。</p>
+<p>发现了 LevelDB 的巨大潜力，以后的项目实现中难不免都会想到这货。</p>
+</div>
+
+
+  
+  <p class="entry-tags">This entry was tagged
+    
+      <a href="/tags/LevelDB/">LevelDB</a>, 
+      <a href="/tags/Python/">Python</a> and 
+      <a href="/tags/%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1/">程序设计</a>
+  </p>
+  
+</div>
+
+  
+    
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'thoughtatlas'; // required: replace example with your forum shortname
+    
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+  
+</div>
+  </div>
+
+  <footer data-offset=50>
+    <div class="container">
+      <p>© Copyright 2012 by Jason Lai. </p>
+    </div>
+  </footer>
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-38208289-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+</body>
+</html>
