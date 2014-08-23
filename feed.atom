@@ -15,7 +15,7 @@
     <author>
       <name>Jason Lai</name>
     </author>
-    <content type="html">&lt;p&gt;要在中国“扭曲“的网络环境中发展 &lt;a class="reference external" href="https://www.cdnzz.com/"&gt;CDN 服务&lt;/a&gt; ，需要付出许多额外的努力，其中，敏感信息是不得不面对的
+    <content type="html">&lt;p&gt;要在中国“扭曲“的网络环境中发展 &lt;a class=&quot;reference external&quot; href=&quot;https://www.cdnzz.com/&quot;&gt;CDN 服务&lt;/a&gt; ，需要付出许多额外的努力，其中，敏感信息是不得不面对的
 事情。在去年，我们还一度认为只要网站备案了，或者接入时经过初审通过，流量信息应该就是足够可靠的了。
 结果在年末时出了些不大不小的烦人事情，被迫临时无限期停止公众的注册活动。也没办法，需要将危机看作
 转机，我们决定继续将时间放在基础服务的开发上，并开始专注企业客户的服务。&lt;/p&gt;
@@ -23,9 +23,9 @@
 公众开放我们的 CDN 服务。有过'掉坑'的经验，我们明白到除了好的服务和功能外，还是需要一番额外的机制。
 其中，也就是本文有所探讨的，我们需要快速整出一套简单可用的自动化信息审核系统，以降低开放的风险。这
 是一个神奇的国度才有的特殊需求，无奈但必须。&lt;/p&gt;
-&lt;div class="section" id="id2"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id2&quot;&gt;
 &lt;h2&gt;整体情况&lt;/h2&gt;
-&lt;p&gt;坚持团队一贯的尽早完成第一版可用程序和 &lt;a class="reference external" href="/2012/07/23/hello-modularity/#kiss"&gt;KISS&lt;/a&gt; 原则，我们希望以简单的想法和最快的速度去实现该系统。
+&lt;p&gt;坚持团队一贯的尽早完成第一版可用程序和 &lt;a class=&quot;reference external&quot; href=&quot;/2012/07/23/hello-modularity/#kiss&quot;&gt;KISS&lt;/a&gt; 原则，我们希望以简单的想法和最快的速度去实现该系统。
 最后确定的实现方案也确实很简单，主要的实现包括一个中央调度进程，以及进行具体处理的 Workers 进程。&lt;/p&gt;
 &lt;p&gt;调度中心统一接收各节点推送过来的 URLs，对接收的 URLs 进行过滤和排重等处理，实时维护一簇待检测内容
 的 URLs，并提供 fetch 和 push 操作作为 URLs 的调度分发接口。负责具体检测任务的 Workers 进程向中心
@@ -37,12 +37,12 @@
 可以保证待处理 URLs 能安全公平地分发到各 Worker 进程去，在执行完内容检测后，再归并汇总各 Workers 推
 送回来的内容检测结果，形成一个可扩展的 map-reduce 体系结构。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id3"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id3&quot;&gt;
 &lt;h2&gt;谈谈资源调度&lt;/h2&gt;
 &lt;p&gt;上面大概描述了系统的整体情况，下面会接着讲述一些关于调度中心实现的细节，也就是本文的主题，资源调度
 的相关处理。为了更好的理解，本文出现的代码只包含基本的处理逻辑，忽略了相关出错处理，具体 RPC 实现以及
 特殊情况处理的逻辑。&lt;/p&gt;
-&lt;p&gt;调度中心需要对 URLs 数据进行管理，考虑了几个方面，最后决定使用 &lt;a class="reference external" href="http://code.google.com/p/leveldb/"&gt;LevelDB&lt;/a&gt; 来作数据持久化。LevelDB 具
+&lt;p&gt;调度中心需要对 URLs 数据进行管理，考虑了几个方面，最后决定使用 &lt;a class=&quot;reference external&quot; href=&quot;http://code.google.com/p/leveldb/&quot;&gt;LevelDB&lt;/a&gt; 来作数据持久化。LevelDB 具
 有优秀的性能表现，基于简单的 key-value 操作，其高效的顺序读写功能也能让程序获益，而且是 Disk 型存储
 让我们不需担心资源问题。不足的是，同一时间里，一个 LevelDB 数据库只能被一个进程操控，不过还好多线程
 不受限制。因为调度中心和 Workers 进程的关系就是纯粹的 client-server 模式，调度中心对数据库进行统一
@@ -50,23 +50,22 @@
 &lt;p&gt;基于简单实现和维护的思想，调度中心将只维护两个数据库，包括 done_db 和 todo_db。其中 done_db 存放已
 完成内容检测的 URLs，而 todo_db 存放待进行检测的 URLs，这些都由调度中心来进行管理。下面的代码是数据
 库和一些相关变量的初始化逻辑。&lt;/p&gt;
-&lt;pre class="code python literal-block"&gt;
-&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;threading&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Lock&lt;/span&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;settings&lt;/span&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;threading&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Lock&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;settings&lt;/span&gt;
 
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="c"&gt;# Initial some useful arguments&lt;/span&gt;
-    &lt;span class="c"&gt;# ...&lt;/span&gt;
-    &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;url_timeout&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;settings&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;URL_TIMEOUT&lt;/span&gt;
-    &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;block_len&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;settings&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;BLOCK_LEN&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;__init__&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;# Initial some useful arguments&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;# ...&lt;/span&gt;
+    &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url_timeout&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;settings&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;URL_TIMEOUT&lt;/span&gt;
+    &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;block_len&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;settings&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;BLOCK_LEN&lt;/span&gt;
 
-    &lt;span class="c"&gt;# 初始化相关 db 以及对应的 lock&lt;/span&gt;
-    &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;done_db&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;leveldb&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;LevelDB&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;settings&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;done_db_path&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;todo_db&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;leveldb&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;LevelDB&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;settings&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;todo_db_path&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="c"&gt;# 使用 Lock 保证线程对 LevelDB 的读写具有同步性&lt;/span&gt;
-    &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;done_db_lock&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Lock&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-    &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;todo_db_lock&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Lock&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-&lt;/pre&gt;
+    &lt;span class=&quot;c&quot;&gt;# 初始化相关 db 以及对应的 lock&lt;/span&gt;
+    &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;done_db&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;leveldb&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;LevelDB&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;settings&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;done_db_path&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;todo_db&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;leveldb&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;LevelDB&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;settings&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;todo_db_path&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;# 使用 Lock 保证线程对 LevelDB 的读写具有同步性&lt;/span&gt;
+    &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;done_db_lock&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Lock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;todo_db_lock&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Lock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;各节点会不停地将 URLs 推送过来，其中必然存在大量的冗余。利用 done_db 和 todo_db 已存储的数据，可以
 将还没有被检测过或已 expire 了的 URLs 过滤出来，然后写入 todo_db 中，让 Workers 进程可以获取到。&lt;/p&gt;
 &lt;p&gt;简单的将 url 作为 LevelDB 的键（key），通过检测 url 是否存在于两个数据库中，就可以判断该 url 是否
@@ -74,7 +73,7 @@
 这类 URLs 需要再次进行内容检测。当然，有很多方法可以解决这个问题。在刚开始实现时，我把这问题想复杂
 了，好一会才意识到，我需要的是一个简单的实现方法。结合 LevelDB 的 key-value 特性，综合考虑性能和
 实现复杂度，我决定从数据的存储结构下手:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
+&lt;pre class=&quot;literal-block&quot;&gt;
 done_db 存储结构:  (md5_key, timestamp_value) 键值对
 todo_db 存储结构:  (md5_key, url_value) 键值对
 &lt;/pre&gt;
@@ -82,88 +81,85 @@ todo_db 存储结构:  (md5_key, url_value) 键值对
 方便 fetch 接口的调度操作。而 done_db 的值为时间戳，就是该 url 的入库时间，这样，通过检测当前的时间
 戳和 done_db 中的 timestamp_value 就可以判断 url 是否已 expire 。基于简单的数据存储结构，代码的实现
 当然也是很简单。&lt;/p&gt;
-&lt;pre class="code python literal-block"&gt;
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;url_existed&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;url_md5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;now_time&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;判断 url 在 todo_db 和 done_db 中是否存在。&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
-    &lt;span class="n"&gt;todo&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;existed_in_todo_db&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url_md5&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="n"&gt;done&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;existed_in_done_db&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url_md5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;now_time&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;bool&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;todo&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="ow"&gt;or&lt;/span&gt; &lt;span class="nb"&gt;bool&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;done&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;url_existed&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url_md5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;now_time&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;sd&quot;&gt;&amp;quot;&amp;quot;&amp;quot;判断 url 在 todo_db 和 done_db 中是否存在。&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;todo&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;existed_in_todo_db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url_md5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;done&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;existed_in_done_db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url_md5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;now_time&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;bool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;todo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;or&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;bool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;done&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
 
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;existed_in_todo_db&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;url_md5&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;监测 url_md5 是否存在于 todo_db 中。
-    若存在，返回对应的值，否则，返回 None。
-    &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
-    &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;todo_db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url_md5&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt;
-    &lt;span class="k"&gt;except&lt;/span&gt; &lt;span class="ne"&gt;KeyError&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="k"&gt;pass&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;existed_in_todo_db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url_md5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;sd&quot;&gt;&amp;quot;&amp;quot;&amp;quot;监测 url_md5 是否存在于 todo_db 中。&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;    若存在，返回对应的值，否则，返回 None。&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;    &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;todo_db&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url_md5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;except&lt;/span&gt; &lt;span class=&quot;ne&quot;&gt;KeyError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;pass&lt;/span&gt;
 
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;existed_in_done_db&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;url_md5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;now_time&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;监测 url_md5 是否存在于 done_db 中。
-    若存在，且该值的存放时间还没超过 timeout 时间，那么返回对应的值，否则，返回 None。
-    &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
-    &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;done_db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url_md5&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;now_time&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;url_timeout&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt;
-    &lt;span class="k"&gt;except&lt;/span&gt; &lt;span class="ne"&gt;KeyError&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="k"&gt;pass&lt;/span&gt;
-&lt;/pre&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;existed_in_done_db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url_md5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;now_time&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;sd&quot;&gt;&amp;quot;&amp;quot;&amp;quot;监测 url_md5 是否存在于 done_db 中。&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;    若存在，且该值的存放时间还没超过 timeout 时间，那么返回对应的值，否则，返回 None。&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;    &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;done_db&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url_md5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;now_time&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url_timeout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;except&lt;/span&gt; &lt;span class=&quot;ne&quot;&gt;KeyError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;pass&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;有了上面抽象出来的 url_existed 方法，可以很容易判断一个 url 是否归类为待处理。接下来，需要实现接收
 各节点推送 URLs 的处理逻辑了。对 URLs 进行遍历，判断是否 url_existed，若是，就写入到 todo_db 中，
 否则，忽略之。就这么简单。&lt;/p&gt;
 &lt;p&gt;因为 LevelDB 支持批量写操作，先将过滤出来的 URLs 收集起来，然后集中写入到 todo_db 中去。&lt;/p&gt;
-&lt;pre class="code python literal-block"&gt;
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;handle_urls&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;urls&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="n"&gt;now_time&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;handle_urls&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urls&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;now_time&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;time&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;time&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
 
-    &lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;done_db_lock&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;todo_db_lock&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="n"&gt;batch&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;leveldb&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;WriteBatch&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;urls&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-            &lt;span class="n"&gt;md5_value&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;calculate_md5&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;url_existed&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;md5_value&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;now_time&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-                &lt;span class="n"&gt;batch&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Put&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;md5_value&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;todo_db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Write&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;batch&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;sync&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;
+    &lt;span class=&quot;k&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;done_db_lock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;todo_db_lock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;batch&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;leveldb&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;WriteBatch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urls&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;md5_value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;calculate_md5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;not&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url_existed&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;md5_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;now_time&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;batch&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Put&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;md5_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;todo_db&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;batch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sync&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;解决了待处理 URLs 的入库问题，调度中心还需要实现 fetch 和 push 接口，用于调度分发待处理 URLs 给
 各 Workers 进程，让 Workers 进程可以通过接口来获取 URLs 进行检测，然后将完成了检测的 URLs 推送回来。&lt;/p&gt;
 &lt;p&gt;LevelDB 高效简单的顺序读写操作是非常的顺手。配合 done_db 和 todo_db，我们可以很容易实现这两个接口。&lt;/p&gt;
-&lt;pre class="code python literal-block"&gt;
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;fetch_data&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;从 todo_db 中返回 block_len 个待处理 urls.&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
-    &lt;span class="n"&gt;rv&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
-    &lt;span class="n"&gt;keys&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
-    &lt;span class="n"&gt;batch&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;leveldb&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;WriteBatch&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-    &lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;todo_db_lock&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="n"&gt;count&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
-        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;todo_db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;RangeIter&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fill_cache&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;False&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-            &lt;span class="n"&gt;rv&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-            &lt;span class="n"&gt;keys&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-            &lt;span class="n"&gt;count&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
-            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;count&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;block_len&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-                &lt;span class="k"&gt;break&lt;/span&gt;
-        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;keys&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;    &lt;span class="c"&gt;# 当 keys 有被填充时，进行 done_db 的相关操作&lt;/span&gt;
-            &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;keys&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-                &lt;span class="n"&gt;batch&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Delete&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-            &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;todo_db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Write&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;batch&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;sync&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;rv&lt;/span&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;fetch_data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;sd&quot;&gt;&amp;quot;&amp;quot;&amp;quot;从 todo_db 中返回 block_len 个待处理 urls.&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;rv&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;keys&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;batch&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;leveldb&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;WriteBatch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;todo_db_lock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;todo_db&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;RangeIter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fill_cache&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;False&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;rv&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;keys&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;block_len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;break&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;keys&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;    &lt;span class=&quot;c&quot;&gt;# 当 keys 有被填充时，进行 done_db 的相关操作&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;key&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;keys&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;batch&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Delete&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;todo_db&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;batch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sync&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rv&lt;/span&gt;
 
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;push_done_data&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;urls&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;根据获取的 urls 给 done_db 进行批量写入。&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
-    &lt;span class="n"&gt;now_time&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;str&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="p"&gt;()))&lt;/span&gt;
-    &lt;span class="n"&gt;batch&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;leveldb&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;WriteBatch&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;urls&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="n"&gt;md5_value&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;calculate_md5&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-        &lt;span class="n"&gt;batch&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Put&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;md5_value&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;now_time&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;done_db_lock&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;done_db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Write&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;batch&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;sync&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;push_done_data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urls&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;sd&quot;&gt;&amp;quot;&amp;quot;&amp;quot;根据获取的 urls 给 done_db 进行批量写入。&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;now_time&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;time&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;time&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()))&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;batch&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;leveldb&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;WriteBatch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urls&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;md5_value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;calculate_md5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;batch&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Put&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;md5_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;now_time&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;done_db_lock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;done_db&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Write&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;batch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sync&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;好的，到现在，调度中心的任务就实现的差不多了，也就那么点东西，没什么复杂。好吧，实际上，实现整个
 系统的过程中，还是费了不少的脑力，也出现了一些没预料到的状况。现在呈现的解决方案，跟最初设想的解决
 方案相比，已经是完全变了个样。很有趣。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id4"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id4&quot;&gt;
 &lt;h2&gt;总结&lt;/h2&gt;
 &lt;p&gt;一套简单可行的解决方案非常珍贵。&lt;/p&gt;
 &lt;p&gt;发现了 LevelDB 的巨大潜力，以后的项目实现中难不免都会想到这货。&lt;/p&gt;
@@ -185,26 +181,26 @@ todo_db 存储结构:  (md5_key, url_value) 键值对
 &lt;p&gt;在项目实现的过程中，除了接触到许多新鲜的工具和技术外，感悟最深的是，如何宏观地看待程序设计，让整体
 项目保持足够的简单，以便组合各程序一起去完成大规模的任务。在此想记录工作中的一些思考和想法。不会
 展示具体实现的详细，主要是程序设计时思维的变化过程。&lt;/p&gt;
-&lt;p&gt;配置管理是项目的一个重点和难点，因为我们设想其为公司内部 Python 项目的配置管理中心 &lt;a class="footnote-reference" href="#id8" id="id2"&gt;[1]&lt;/a&gt; 。配置管理
+&lt;p&gt;配置管理是项目的一个重点和难点，因为我们设想其为公司内部 Python 项目的配置管理中心 &lt;a class=&quot;footnote-reference&quot; href=&quot;#id8&quot; id=&quot;id2&quot;&gt;[1]&lt;/a&gt; 。配置管理
 中心，单从字面意思就知道其用处，但要实现一个高可靠和高可用的配置管理中心绝对不是一件简单的事情。&lt;/p&gt;
-&lt;p&gt;基于尽早完成第一版可用程序和 &lt;a class="reference external" href="/2012/07/23/hello-modularity/#kiss"&gt;KISS&lt;/a&gt; 的原则，我们决定使用 &lt;a class="reference external" href="http://thrift.apache.org/"&gt;Thrift&lt;/a&gt; 来进行 RPC 通信,先完成一个基础的
+&lt;p&gt;基于尽早完成第一版可用程序和 &lt;a class=&quot;reference external&quot; href=&quot;/2012/07/23/hello-modularity/#kiss&quot;&gt;KISS&lt;/a&gt; 的原则，我们决定使用 &lt;a class=&quot;reference external&quot; href=&quot;http://thrift.apache.org/&quot;&gt;Thrift&lt;/a&gt; 来进行 RPC 通信,先完成一个基础的
 类 C/S 模型的配置管理中心程序。配置管理中心的整体功能由两个独立程序（配置的设置和分发功能）来实现，
 如此设计的原因有几个，这里就不表述了。下面的记述，就是我在处理配置设置和分发程序相关逻辑时的一些
 思考。&lt;/p&gt;
 &lt;p&gt;对于配置数据，两个程序各自的处理逻辑相当一目了然。一个程序利用配置数据（只读），自身作为服务器，
 对外提供配置分发的功能，下面我会称之为 &lt;cite&gt;分发程序&lt;/cite&gt; 。另一个程序生成和控制配置数据（读写），处理
-创建、更新和删除等典型的 &lt;a class="reference external" href="http://en.wikipedia.org/wiki/Create,_read,_update_and_delete"&gt;CRUD&lt;/a&gt; 操作，下面我会称之为 &lt;cite&gt;控制程序&lt;/cite&gt; 。&lt;/p&gt;
+创建、更新和删除等典型的 &lt;a class=&quot;reference external&quot; href=&quot;http://en.wikipedia.org/wiki/Create,_read,_update_and_delete&quot;&gt;CRUD&lt;/a&gt; 操作，下面我会称之为 &lt;cite&gt;控制程序&lt;/cite&gt; 。&lt;/p&gt;
 &lt;p&gt;嗯，事情就是这样，问题也算是清晰，但是，如何让两独立程序对配置信息进行更好的通信交互？看似很简单
 的问题，实际中还是需要花一番时间解决。在具体的处理里，从开始的配置文件驱动，到后来的数据库驱动，
 我的想法有很大的变化。&lt;/p&gt;
-&lt;div class="section" id="id3"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id3&quot;&gt;
 &lt;h2&gt;配置文件驱动&lt;/h2&gt;
 &lt;p&gt;项目启动后，便开始考虑程序的具体实现。当时没想太多其他的东西，非常直接，配置文件嘛，当然就是用文件
 来记录。接着想到的念头是，配置的逻辑可能会很复杂，应该使用一种高可读性的配置文法去记录配置。好吧，
-这种角色非 &lt;a class="reference external" href="http://yaml.org/"&gt;YAML&lt;/a&gt; 莫属啦。然后，就到了费脑筋的事情啦。&lt;/p&gt;
+这种角色非 &lt;a class=&quot;reference external&quot; href=&quot;http://yaml.org/&quot;&gt;YAML&lt;/a&gt; 莫属啦。然后，就到了费脑筋的事情啦。&lt;/p&gt;
 &lt;p&gt;&lt;cite&gt;控制程序&lt;/cite&gt; 和 &lt;cite&gt;分发程序&lt;/cite&gt; 相互独立， &lt;cite&gt;控制程序&lt;/cite&gt; 在变更了配置后，应该让 &lt;cite&gt;分发程序&lt;/cite&gt; 知道，让其去获取
 最新的配置。诚然，两个程序间需要交互通信。但是，考虑到整体项目还包含多个程序，我不想为这两个程序
-额外引入一套独立的 &lt;a class="reference external" href="http://en.wikipedia.org/wiki/Inter-process_communication"&gt;IPC&lt;/a&gt; 机制，希望能让程序间的交互尽量保持简单。&lt;/p&gt;
+额外引入一套独立的 &lt;a class=&quot;reference external&quot; href=&quot;http://en.wikipedia.org/wiki/Inter-process_communication&quot;&gt;IPC&lt;/a&gt; 机制，希望能让程序间的交互尽量保持简单。&lt;/p&gt;
 &lt;p&gt;应该怎么做呢？其实再想一下就能搞清楚状况。关键就在两个程序对于配置数据的处理逻辑上，一个会对配置
 进行读写操作，但是另一个则只对配置进行读操作。对的，其实解决方法的思路很简单，只要 &lt;cite&gt;控制程序&lt;/cite&gt; 能
 在修改配置数据后对外标识配置已改变， &lt;cite&gt;分发程序&lt;/cite&gt; 可以按照一定时间周期轮询监测配置是否有变更，从而就
@@ -218,7 +214,7 @@ todo_db 存储结构:  (md5_key, url_value) 键值对
 存放一个 config.yml 中心配置文件，其将作为 &lt;cite&gt;控制程序&lt;/cite&gt; 和 &lt;cite&gt;分发程序&lt;/cite&gt; 的通信桥梁，汇总所有配置文件的
 存放路径以及其它的更多信息。&lt;/p&gt;
 &lt;p&gt;通过监测这中心配置文件，我们可以很容易的获取有效配置文件的相关信息。其设置的格式很简单，如下所示:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
+&lt;pre class=&quot;literal-block&quot;&gt;
 PATHS:
     .:
         - python.yml
@@ -236,28 +232,27 @@ PATHS:
 &lt;p&gt;上面展示的是 config.yml 中配置路径相关的信息， &lt;cite&gt;分发程序&lt;/cite&gt; 可以很方便的由此获取所有有效配置文件的
 路径信息。下面的 transform 函数利用递归，可以将 config.yml 中的路径信息转换为 python 中的 list 来
 存储。简单的处理，但也很有趣。&lt;/p&gt;
-&lt;pre class="code python literal-block"&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;yaml&lt;/span&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;yaml&lt;/span&gt;
 
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;transform&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="n"&gt;paths&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[]&lt;/span&gt;
-    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;_walk&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;prefix&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;iteritems&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
-            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;isinstance&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;dict&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-                &lt;span class="n"&gt;_walk&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;prefix&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s"&gt;'/'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-            &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="nb"&gt;isinstance&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;list&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-                &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;_walk&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="s"&gt;''&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="p"&gt;},&lt;/span&gt; &lt;span class="n"&gt;prefix&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;key&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s"&gt;'/'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;v&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-            &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-                &lt;span class="n"&gt;paths&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;prefix&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="n"&gt;_walk&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;''&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;paths&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;transform&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;paths&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;_walk&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;iteritems&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;():&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;isinstance&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;dict&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;_walk&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;prefix&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;key&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;/&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;elif&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;isinstance&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;list&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+                &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_walk&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;prefix&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;key&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;/&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;paths&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;prefix&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;_walk&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;paths&lt;/span&gt;
 
-&lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;'config.yml'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-    &lt;span class="n"&gt;conf_dict&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;yaml&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
-    &lt;span class="n"&gt;paths&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;transform&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;conf_dict&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;'PATHS'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
-&lt;/pre&gt;
+&lt;span class=&quot;k&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;open&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;config.yml&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;conf_dict&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;yaml&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;load&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;paths&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;transform&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;conf_dict&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;PATHS&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;利用 transform 函数将 config.yml 配置转换后，可以得到:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
+&lt;pre class=&quot;literal-block&quot;&gt;
 ['host/cn/info.yml',
  'host/usa/info.yml',
  './python.yml',
@@ -271,7 +266,7 @@ PATHS:
 &lt;p&gt;OK，整体的思路大概就是这样，不复杂，容易实现，不过事情永远都是变化大于计划。很快我又否定了这个配置
 文件驱动的解决方案，转向使用数据库来实现。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id4"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id4&quot;&gt;
 &lt;h2&gt;数据库驱动&lt;/h2&gt;
 &lt;p&gt;从配置文件转到数据库，原因很简单也很自然， &lt;cite&gt;控制程序&lt;/cite&gt; 对配置的处理主要是 CRUD 操作，使用数据库会
 更加方便。更重要的，现在的初版配置管理中心， &lt;cite&gt;分发程序&lt;/cite&gt; 只需实现为单机部署程序就行了，但是不排除
@@ -291,7 +286,7 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
 &lt;cite&gt;分发程序&lt;/cite&gt; 每次监测只需检索出那些 is_modified 域为 1 的配置项，根据这些配置项更新缓存，然后再将
 数据库中这些数据项的 is_modified 域设置为 0，即可完成监测操作。&lt;/p&gt;
 &lt;p&gt;但是，仅靠 is_modified 域还是不够。为什么？因为在数据库中，当一些配置被删除掉了，这些配置不会留下
-任何痕迹， &lt;cite&gt;分发程序&lt;/cite&gt; 也就无法知道有什么数据项被删除了 &lt;a class="footnote-reference" href="#id9" id="id5"&gt;[2]&lt;/a&gt; 。&lt;/p&gt;
+任何痕迹， &lt;cite&gt;分发程序&lt;/cite&gt; 也就无法知道有什么数据项被删除了 &lt;a class=&quot;footnote-reference&quot; href=&quot;#id9&quot; id=&quot;id5&quot;&gt;[2]&lt;/a&gt; 。&lt;/p&gt;
 &lt;p&gt;为了解决这个问题，考虑了几个解决方案。其中包括，让 &lt;cite&gt;分发程序&lt;/cite&gt; 每隔一天就完整载入一次所有配置，从而
 就避免了配置数据的遗漏，但是这个解决方法使得配置的有效性会有较长的延迟，无法接受，抛弃。&lt;/p&gt;
 &lt;p&gt;最后采用的解决方法是，使用懒惰删除。类似于 is_modified 域，我们再定义一个 is_deleted 域，用来标识
@@ -301,47 +296,46 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
 数据项真正删除掉。这时候，才算最终完成了监测操作。&lt;/p&gt;
 &lt;p&gt;上面的处理逻辑听起来貌似有点复杂，但实际上整体的操作还是很简单，主要是我的语言描述不够透彻简洁。
 我想，还是代码更来得简单易懂。下面的代码展示了 &lt;cite&gt;分发程序&lt;/cite&gt; 初始化和更新操作的逻辑处理。&lt;/p&gt;
-&lt;pre class="code python literal-block"&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;yaml&lt;/span&gt;
-&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;config&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;yaml&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;config&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;
 
-&lt;span class="n"&gt;Configs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{}&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;Configs&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{}&lt;/span&gt;
 
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;setup_config&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
-    &lt;span class="k"&gt;global&lt;/span&gt; &lt;span class="n"&gt;Configs&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;setup_config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;():&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;global&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Configs&lt;/span&gt;
 
-    &lt;span class="n"&gt;sql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT * FROM `conf_info` WHERE `is_deleted` != 1&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="n"&gt;infos&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sql&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;infos&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="n"&gt;Configs&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;title&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;yaml&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;sql&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;SELECT * FROM `conf_info` WHERE `is_deleted` != 1&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;infos&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sql&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;info&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;infos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;Configs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;yaml&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;load&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
 
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;update_config&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
-    &lt;span class="k"&gt;global&lt;/span&gt; &lt;span class="n"&gt;Configs&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;update_config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;():&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;global&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Configs&lt;/span&gt;
 
-    &lt;span class="c"&gt;# 处理 deleted 的数据项&lt;/span&gt;
-    &lt;span class="n"&gt;select_deleted_sql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT * FROM `conf_info` &amp;quot;&lt;/span&gt;
-                          &lt;span class="s"&gt;&amp;quot;WHERE `is_deleted` = 1&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="n"&gt;infos&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;select_deleted_sql&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;infos&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="n"&gt;del_sql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;DELETE FROM `conf_info` WHERE `id` = &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;
-        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;infos&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-            &lt;span class="c"&gt;# 更新 Configs，然后将数据项从数据库中真正删除掉&lt;/span&gt;
-            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;title&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;Configs&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-                &lt;span class="k"&gt;del&lt;/span&gt; &lt;span class="n"&gt;Configs&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;title&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;execute&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;del_sql&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;id&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class=&quot;c&quot;&gt;# 处理 deleted 的数据项&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;select_deleted_sql&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;SELECT * FROM `conf_info` &amp;quot;&lt;/span&gt;
+                          &lt;span class=&quot;s&quot;&gt;&amp;quot;WHERE `is_deleted` = 1&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;infos&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;select_deleted_sql&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;infos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;del_sql&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;quot;DELETE FROM `conf_info` WHERE `id` = &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;%s&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;info&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;infos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;c&quot;&gt;# 更新 Configs，然后将数据项从数据库中真正删除掉&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;title&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Configs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;del&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Configs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;execute&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;del_sql&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
 
-    &lt;span class="c"&gt;# 处理 modified 的数据项&lt;/span&gt;
-    &lt;span class="n"&gt;select_modified_sql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;SELECT * FROM `conf_info` &amp;quot;&lt;/span&gt;
-                           &lt;span class="s"&gt;&amp;quot;WHERE `is_modified` = 1&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="n"&gt;infos&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;query&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;select_modified_sql&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;infos&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="n"&gt;udp_sql&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;UPDATE `conf_info` SET `is_modified` = '0' &amp;quot;&lt;/span&gt;
-                   &lt;span class="s"&gt;&amp;quot;WHERE `id` = &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;infos&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-            &lt;span class="c"&gt;# 更新 Configs，然后将数据项的 is_modified 域修正为 0&lt;/span&gt;
-            &lt;span class="n"&gt;Configs&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;title&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;  &lt;span class="n"&gt;yaml&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;load&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-            &lt;span class="n"&gt;db&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;execute&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;udp_sql&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;id&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;
+    &lt;span class=&quot;c&quot;&gt;# 处理 modified 的数据项&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;select_modified_sql&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;SELECT * FROM `conf_info` &amp;quot;&lt;/span&gt;
+                           &lt;span class=&quot;s&quot;&gt;&amp;quot;WHERE `is_modified` = 1&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;infos&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;select_modified_sql&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;infos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;udp_sql&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;quot;UPDATE `conf_info` SET `is_modified` = &amp;#39;0&amp;#39; &amp;quot;&lt;/span&gt;
+                   &lt;span class=&quot;s&quot;&gt;&amp;quot;WHERE `id` = &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;%s&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;;&amp;quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;info&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;infos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;c&quot;&gt;# 更新 Configs，然后将数据项的 is_modified 域修正为 0&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;Configs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;  &lt;span class=&quot;n&quot;&gt;yaml&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;load&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;execute&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;udp_sql&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;上面的代码就是 &lt;cite&gt;分发程序&lt;/cite&gt; 中，监测线程实际实现的大概逻辑。看到这里，你大概有点忍耐不住要嚷嚷了，
 明明在使用数据库，当有请求时，直接向数据库查询配置数据，处理后返回就是啦。明明可以简单的实现，为
 什么要动态监测配置数据，硬生生在程序中维护多一份配置数据。&lt;/p&gt;
@@ -351,7 +345,7 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
 还是简单，不是一句话就能说完全的。上面所说的方案能解决问题，而且整个概念并不复杂，实际的代码实现也
 确实很简单，也可以复用。所以，实际就这样做了。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id6"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id6&quot;&gt;
 &lt;h2&gt;还有不足&lt;/h2&gt;
 &lt;p&gt;细心点就能发现，上面数据库驱动中所说的解决方法还是存在着不足， &lt;cite&gt;分发程序&lt;/cite&gt; 对于配置更新的监测会有
 漏洞，使得程序缓存的配置信息与数据库的配置信息不完全一致。&lt;/p&gt;
@@ -362,22 +356,22 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
 &lt;p&gt;解决方法是，每隔一天（或更长的时间）进行一次全面的更新，校正可能的“脏配置数据”，保证 &lt;cite&gt;分发程序&lt;/cite&gt; 中
 配置信息的准确性和同步性。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id7"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id7&quot;&gt;
 &lt;h2&gt;不是总结的总结&lt;/h2&gt;
 &lt;p&gt;在工程上应该尽可能使用简单实用的方法。&lt;/p&gt;
 &lt;p&gt;简单清晰的实现方案，更容易理解和构建，使得不可能避免的 Debug 更为轻松（可能发生在一年后或者三天后），
 也让程序的重构和改进变得更为轻松。总的来说，就是让我们的生活更舒适。 :-)&lt;/p&gt;
-&lt;hr class="docutils" /&gt;
-&lt;table class="docutils footnote" frame="void" id="id8" rules="none"&gt;
-&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
-&lt;tbody valign="top"&gt;
-&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id2"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;最开始想使用 &lt;a class="reference external" href="http://zookeeper.apache.org/"&gt;ZooKeeper&lt;/a&gt; ，不过考察后认为还是自行研发更符合实况。&lt;/td&gt;&lt;/tr&gt;
+&lt;hr class=&quot;docutils&quot; /&gt;
+&lt;table class=&quot;docutils footnote&quot; frame=&quot;void&quot; id=&quot;id8&quot; rules=&quot;none&quot;&gt;
+&lt;colgroup&gt;&lt;col class=&quot;label&quot; /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign=&quot;top&quot;&gt;
+&lt;tr&gt;&lt;td class=&quot;label&quot;&gt;&lt;a class=&quot;fn-backref&quot; href=&quot;#id2&quot;&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;最开始想使用 &lt;a class=&quot;reference external&quot; href=&quot;http://zookeeper.apache.org/&quot;&gt;ZooKeeper&lt;/a&gt; ，不过考察后认为还是自行研发更符合实况。&lt;/td&gt;&lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;table class="docutils footnote" frame="void" id="id9" rules="none"&gt;
-&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
-&lt;tbody valign="top"&gt;
-&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id5"&gt;[2]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;但是，使用配置文件驱动可以知道，文件跟数据库还是不一样的。&lt;/td&gt;&lt;/tr&gt;
+&lt;table class=&quot;docutils footnote&quot; frame=&quot;void&quot; id=&quot;id9&quot; rules=&quot;none&quot;&gt;
+&lt;colgroup&gt;&lt;col class=&quot;label&quot; /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign=&quot;top&quot;&gt;
+&lt;tr&gt;&lt;td class=&quot;label&quot;&gt;&lt;a class=&quot;fn-backref&quot; href=&quot;#id5&quot;&gt;[2]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;但是，使用配置文件驱动可以知道，文件跟数据库还是不一样的。&lt;/td&gt;&lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
@@ -398,7 +392,7 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
 &lt;p&gt;生活时而忙碌，时而悠闲，基本上是有条不紊地过着，除了脚踏实地逐步向前迈进，偶尔也会抬头仰望下星空。
 在2013年，我希望能够继续保持良好的状态，学习并探究各种有趣的事情。工作上，期待可以做出一番让自己
 和他人满意的图景。生活上，希望自己能成为一个更好的男人，做好并承担各项重要的决定和事情。&lt;/p&gt;
-&lt;div class="section" id="coding-practicing"&gt;
+&lt;div class=&quot;section&quot; id=&quot;coding-practicing&quot;&gt;
 &lt;h2&gt;coding, practicing&lt;/h2&gt;
 &lt;p&gt;毕业后，最终选择留在格安工作，原因包括下面几个。&lt;/p&gt;
 &lt;p&gt;首先，公司给出的薪水还算符合自己的心理预期。当然，我没预料到，年终几个月的经济会如此的艰难，公司
@@ -417,16 +411,16 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
 的事情上还是有显著的不足，不够成熟，不够担当，不够细致，很多事情都还有待改进。还有很长的一段路要
 走呢。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id2"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id2&quot;&gt;
 &lt;h2&gt;终于毕业了&lt;/h2&gt;
 &lt;p&gt;大学的日子一度让我感得无法忍受，自顾自地在计算机科学技术的世界畅游。过程中，发现了思考的乐趣，找寻到
 了自己人生的目标，但也使得自己的学业几度告急。从08年入学，时间终于来到了2012年6月份，我毕业了。回想
 毕业的那天，当时自己的心情没有什么特别，很平静地听从各种安排，很平静地领取了学位证书，很平静地打包好
 行装，和女友一起坐和谐号回到了广州住处，离开了那徘徊四年之久的东莞。也正式离开了校园。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id3"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id3&quot;&gt;
 &lt;h2&gt;实习的时间&lt;/h2&gt;
-&lt;p&gt;在实习刚开始的那段时间，自己还真的是没怎么找到感觉，连公司的业务（ &lt;a class="reference external" href="http://en.wikipedia.org/wiki/Content_delivery_network"&gt;CDN&lt;/a&gt; ，内容分发网络）都没搞清楚
+&lt;p&gt;在实习刚开始的那段时间，自己还真的是没怎么找到感觉，连公司的业务（ &lt;a class=&quot;reference external&quot; href=&quot;http://en.wikipedia.org/wiki/Content_delivery_network&quot;&gt;CDN&lt;/a&gt; ，内容分发网络）都没搞清楚
 就开始进行相关的编程，些许不知所以然，唯有循规蹈矩地按照标哥的讲述以及自己的理解去实现任务。还好，
 这样的情况没有持续多久，不熟悉就花时间去学习，不确定就投入精力去实践。在实习的几个月里，也成功完成
 了数个任务，在这过程中，我的信心逐渐累积，相关的编程经验也在火速上涨。&lt;/p&gt;
@@ -434,7 +428,7 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
 流逝，总能让我感觉到时光也在不断流逝。生命总是从一个阶段瞬间跳跃到另一个阶段，我知道自己也即将要
 跨入人生的另一阶段了。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id4"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id4&quot;&gt;
 &lt;h2&gt;寻找实习&lt;/h2&gt;
 &lt;p&gt;从刚接触 Python 编程开始，就为其简洁优雅所吸引，彼时便希望未来找一份 Python 相关开发的工作。为此，
 从去年开始，除了保持对基础 CS 相关知识和编程素养的学习，我开始有意识地去接触学习一些实际生产环境中
@@ -448,11 +442,11 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
 几个家都发了简历，结果不知是我资历过浅，还是简历做的不好，没有几家公司有响应。其中一家在广州的公司
 来电约了个时间面试，刚好那时候需要到广州补拍毕业的证件照（自己导致的折腾事），于是约好了面试的时间
 ，打算那天拍了照后顺便去天河五山面试。&lt;/p&gt;
-&lt;p&gt;好吧，事情就发展到这里。我通过了面试，进入了这家名为格安科技，提供 &lt;a class="reference external" href="http://en.wikipedia.org/wiki/Content_delivery_network"&gt;CDN&lt;/a&gt; 基础服务的初创公司，人不
+&lt;p&gt;好吧，事情就发展到这里。我通过了面试，进入了这家名为格安科技，提供 &lt;a class=&quot;reference external&quot; href=&quot;http://en.wikipedia.org/wiki/Content_delivery_network&quot;&gt;CDN&lt;/a&gt; 基础服务的初创公司，人不
 多，地方也不大，但当时给我的感觉还不错，于是乐观的认为在这里应该能学到东西。再然后，准确的说，应该
 是两天之后，我就来上班啦。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id5"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id5&quot;&gt;
 &lt;h2&gt;最后的寒假&lt;/h2&gt;
 &lt;p&gt;随着2011年的过去，大四伊始那“精彩绚丽”的学期也终于结束了，生活总是出人意外，不过最后依然是回归
 平静。于是，学生时代的最后一个寒假也准时到来了。没什么特别，还是如往年那样回家度过，唯一不同的是
@@ -478,17 +472,17 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
 运行。而在那些计算机基础理论的后面，是数代计算机科学家研究探索的成果。这个时代的程序员无疑是幸福
 的，不必再去开拓许多基础的东西，可以站在更高的层次去解决实际问题。但同时，我很多时候都会很好奇，
 在那个使用穿孔卡纸来进行机器编程的年代，那些为计算机的魔力所吸引的人，是如何去探索发现其中的乐趣。&lt;/p&gt;
-&lt;p&gt;近段时间看了《 &lt;a class="reference external" href="http://book.douban.com/subject/10432364/"&gt;奇思妙想&lt;/a&gt; 》(Out of their Minds) 这本书。原书编写于1998年，立足于现场访谈的第一手
+&lt;p&gt;近段时间看了《 &lt;a class=&quot;reference external&quot; href=&quot;http://book.douban.com/subject/10432364/&quot;&gt;奇思妙想&lt;/a&gt; 》(Out of their Minds) 这本书。原书编写于1998年，立足于现场访谈的第一手
 记录，书中向我们展示了15位当代伟大计算机科学家的许多事情（非常汗颜自己只知道其中不到一半的前辈），
 包括描述他们过往的生活历程和工作成果。本书具有不少有趣和引人思考的内容，让我知道了大师们成长以及
 科研时期的许多事情。阅读这些东西具体有什么作用？其实我也不知道，但在阅读此书的过程中确实带给了我
 不少的思考，这就非常难得。抱着增广见闻的心态去看此书，感觉应该是非常的不错。&lt;/p&gt;
 &lt;p&gt;对了，还要感谢译者用心翻译，虽然语言间还是略显生硬，但都不太影响阅读的感觉。本书让我们一窥这些伟大
 计算机科学家的风采，在阅读的过程中，特别对书中的一些访谈内容进行了些许摘录，以做记录。&lt;/p&gt;
-&lt;div class="section" id="john-backus"&gt;
+&lt;div class=&quot;section&quot; id=&quot;john-backus&quot;&gt;
 &lt;h2&gt;John Backus&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;大多数科学家之所以成为科学家，是因为他们畏惧生活。在科学中有所成就无疑非常诱人，因为在此过程中
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;大多数科学家之所以成为科学家，是因为他们畏惧生活。在科学中有所成就无疑非常诱人，因为在此过程中
 无需与人产生冲突，无需应付艰难的人际关系，可以完全按自己的方式生活。在这个近乎纯洁的象牙塔里，
 你可以全力施展自己的才华，而没有任何痛苦。与生活中的困难相比，解决科学问题的困难简直就是微不足
 道。&lt;/p&gt;
@@ -497,48 +491,48 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="john-mccarthy"&gt;
+&lt;div class=&quot;section&quot; id=&quot;john-mccarthy&quot;&gt;
 &lt;h2&gt;John McCarthy&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;如果希望计算机具有一般的智能，那么其外在结构就必须基于一般的常识和推理。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;如果希望计算机具有一般的智能，那么其外在结构就必须基于一般的常识和推理。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;所有的科学以及专业理论中都引入了常识。当你想要改进理论时，你总要回到常识推理，因为是常识推理
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;所有的科学以及专业理论中都引入了常识。当你想要改进理论时，你总要回到常识推理，因为是常识推理
 主导着你的试验。&lt;/p&gt;
 &lt;p&gt;所以，如果有人想设计出更好的象棋程序，就需要对自己的成果进行试验，让它分析各种棋局。有关进行何种
 试验的所有推理都立足于常识框架之内。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;利用逻辑表达世界中的事实的进展一直都很缓慢。亚里士多德没有发明形式体系。莱布尼茨没有发明命题演算
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;利用逻辑表达世界中的事实的进展一直都很缓慢。亚里士多德没有发明形式体系。莱布尼茨没有发明命题演算
 ，尽管这种形式体系比他和牛顿同时发明的微积分更加简单。乔治·布尔发明了命题演算，却没有发明谓词
 演算。戈特洛布·弗雷格发明了谓词演算，但从未尝试过将非单调推理形式化。我想我们人类明白，要明确地
 表达我们思维过程中的各种事实，表面来看似乎简单，实际上是很困难的。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="alan-c-kay"&gt;
+&lt;div class=&quot;section&quot; id=&quot;alan-c-kay&quot;&gt;
 &lt;h2&gt;Alan C.Kay&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;所有对事物的认识都始于我们不愿盲目地接受这个世界。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;所有对事物的认识都始于我们不愿盲目地接受这个世界。&lt;/p&gt;
 &lt;p&gt;在自然科学中，是大自然给出一个世界，而我们去探索其中的法则。对于计算机来说，却是我们自己来创建
 法则，创造一个世界。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我对人工智能真的不感兴趣，部分原因在于它太难了。我的生物学背景告诉我，为人工智能建立一套可行性
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我对人工智能真的不感兴趣，部分原因在于它太难了。我的生物学背景告诉我，为人工智能建立一套可行性
 标准绝不是件容易的事。每次我坐下来思考这个问题，总发现那些令其他人满意的成果无法令我满意。在我
 看来，他们所做的东西并不能称为是智能。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;人们想要的东西往往并不是他们真正需要的，因为两者是受不同的原因驱动的。技术应该让愿望和需求保持
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;人们想要的东西往往并不是他们真正需要的，因为两者是受不同的原因驱动的。技术应该让愿望和需求保持
 一致，并同时满足两者。这非常重要。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="edsger-w-dijkstra"&gt;
+&lt;div class=&quot;section&quot; id=&quot;edsger-w-dijkstra&quot;&gt;
 &lt;h2&gt;Edsger W. Dijkstra&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;我曾问我母亲（一位数学家）数学是不是一门很难的学科。她告诉我，你要做的就是学会所有的公式并且
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我曾问我母亲（一位数学家）数学是不是一门很难的学科。她告诉我，你要做的就是学会所有的公式并且
 应用自如。另外要记住，如果你需要5行以上来证明某件事，那么你的方法肯定错了。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;人们总是痴迷于自己不幸的根源 —— 这也是许多婚姻能稳固的根本原因。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;人们总是痴迷于自己不幸的根源 —— 这也是许多婚姻能稳固的根本原因。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;当时我正在试图改进数学论证：让论证更简单、更清晰。这需要把从编程中得到的经验运用到更广阔的数学
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;当时我正在试图改进数学论证：让论证更简单、更清晰。这需要把从编程中得到的经验运用到更广阔的数学
 领域中。&lt;/p&gt;
 &lt;p&gt;众所周知，要想把某件事做大，就必须对其进行分解 —— 类似于某些模块，我们必须能够独立开各个部分。
 编程的人都知道，这绝不只是劳动分工的问题，因为如果接口选择错误或者不恰当，工作量就会成10倍地
@@ -549,16 +543,16 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
 考虑到这一点。一个优秀的数学理论一定具有实用性劳动分工的所有特征。缺乏经验的理论家的典型表现
 就是陶醉在自己提出的复杂论证中。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我永远秉承自己的看法和判断，毫不妥协。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我永远秉承自己的看法和判断，毫不妥协。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="michael-o-rabin"&gt;
+&lt;div class=&quot;section&quot; id=&quot;michael-o-rabin&quot;&gt;
 &lt;h2&gt;Michael O. Rabin&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;我们应当放弃寻找绝对正确的结果和答案。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我们应当放弃寻找绝对正确的结果和答案。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我认为，我们对于复杂任务还缺乏充分的理解。比如说，我们对人的记忆如何工作就缺乏充分的理解。如果
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我认为，我们对于复杂任务还缺乏充分的理解。比如说，我们对人的记忆如何工作就缺乏充分的理解。如果
 我和你谈起贝多芬，你马上就能知道我说的是一位作曲家。人们能够构建一种记忆组织方法，或者计算机
 程序，在一个有限的领域内对姓名分类。&lt;/p&gt;
 &lt;p&gt;但是，我们的记忆比这要复杂得多。你走在路上遇到一个糟蹋的人，于是突然想起上学时那位脏兮兮的同桌。&lt;/p&gt;
@@ -571,29 +565,29 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="donald-e-knuth"&gt;
+&lt;div class=&quot;section&quot; id=&quot;donald-e-knuth&quot;&gt;
 &lt;h2&gt;Donald E. Knuth&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;计算机编程是一种艺术形式，就如同人们谱写诗歌和音乐。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;计算机编程是一种艺术形式，就如同人们谱写诗歌和音乐。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;数学是一种模式的科学。音乐也是模式。计算机科学在进行抽象、建立模式等方面同样有很多作为。我认为，
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;数学是一种模式的科学。音乐也是模式。计算机科学在进行抽象、建立模式等方面同样有很多作为。我认为，
 计算机科学与其他领域最大的区别就在于它不断的跃变 —— 从微观角度上升到宏观角度。&lt;/p&gt;
 &lt;p&gt;有许多职业的产生是有明确的需要，人们要找到解决重要问题的方法，比如医学方面的职业。而像计算机科学
 这样的职业之所以存在，是我们从小形成的思维结构所决定的。&lt;/p&gt;
 &lt;p&gt;如果你碰巧属于某 2%的人，那么你就会自然而然地被计算机所吸引而产生共鸣。正是思维方式将我们与其他
 人区分开来。最终，我意识到自己是一位计算机科学家。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我想，我分析算法的方式与业界绝大部分研究者不同。我的研究的独特之处在于能够指出某事比另一件事要
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我想，我分析算法的方式与业界绝大部分研究者不同。我的研究的独特之处在于能够指出某事比另一件事要
 好 10%到 15%。这是品味和性情的问题。我善于观察细节，这是从小接受的训练决定的；而有些人善于通观
 全局。&lt;/p&gt;
 &lt;p&gt;有些科学家就像探险家，喜欢走出去，在新领土上竖起旗帜；另一些则喜欢在已有的土地上灌溉和施肥，规范
 结构，立定法规。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我们常说需求是发明之母，这句话并不确切。一个人还得拥有该领域的背景知识。我并不是随走随看，研究
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我们常说需求是发明之母，这句话并不确切。一个人还得拥有该领域的背景知识。我并不是随走随看，研究
 自己看到的每一个问题。我解决的那些问题，都是因为我正好有独特的背景知识，也许会帮助我解决它。这是
 我的命运，我的责任。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;总的来说，不管你想研究的是什么，只要你能想象自己要对计算机来解释它，你就能发现这一主题中有哪些
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;总的来说，不管你想研究的是什么，只要你能想象自己要对计算机来解释它，你就能发现这一主题中有哪些
 你还不太了解的地方。这能帮助你提出正确的问题，也是对你所知的终极考验。&lt;/p&gt;
 &lt;p&gt;比如说，人们提出音乐理论是为了对什么好听、什么不好听作出客观而非主观的解答。我们知道莫扎特的音乐
 很好听，因为曲目和谐等。但当你要为计算机写出一个程序，让它创造真正优秀的音乐时，你就会知道已有的
@@ -601,14 +595,14 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="robert-e-tarjan"&gt;
+&lt;div class=&quot;section&quot; id=&quot;robert-e-tarjan&quot;&gt;
 &lt;h2&gt;Robert E. Tarjan&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;我喜欢想象结构、线图和数据结构。这似乎比其他很多事情要来得轻松。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我喜欢想象结构、线图和数据结构。这似乎比其他很多事情要来得轻松。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;优秀的想法总是有办法进行简化，而且能解决原有目的之外的问题。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;优秀的想法总是有办法进行简化，而且能解决原有目的之外的问题。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;成功的关键在于问题的选择，而不是找出解决的方法。只要你能找到正确的方向，只要你能提出正确的问题，
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;成功的关键在于问题的选择，而不是找出解决的方法。只要你能找到正确的方向，只要你能提出正确的问题，
 你就已经开始迈向成功，问题的解决就在眼前。&lt;/p&gt;
 &lt;p&gt;要从实际应用中发现问题。人们很容易钻进理论的牛角尖，埋首于细枝末节，却失去了和真实世界间的联系。
 我研究的往往是那些有一定实际意义的问题，我感觉自己能够为它们找到更加实用的算法。&lt;/p&gt;
@@ -616,72 +610,72 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
 联系。数学和理论计算机科学的魔力就在于此。你正想寻找某种普遍原理，突然就出现了某种神秘的联系。
 没有人知道这是为什么。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;人与人之间交往是非常重要的，而且它具有合作精神。身为教授，最大的乐趣之一就在于能带领一批研究生。
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;人与人之间交往是非常重要的，而且它具有合作精神。身为教授，最大的乐趣之一就在于能带领一批研究生。
 它能让你在研究中拥有巨大的优势，而且能调动极大的积极性，因为你身边的人都有着创新、开放的思维，
 而且求知若渴。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;成功需要什么？需要头脑，也需要坚忍不拔的精神。要解决一个问题，可能会有许多次失败的尝试，但最后
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;成功需要什么？需要头脑，也需要坚忍不拔的精神。要解决一个问题，可能会有许多次失败的尝试，但最后
 总有一次尝试让你看到奇迹的出现。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="leslie-lamport"&gt;
+&lt;div class=&quot;section&quot; id=&quot;leslie-lamport&quot;&gt;
 &lt;h2&gt;Leslie Lamport&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;我记得有一次午休时我坐在那里，有人进来以大人的口吻说：“看他那个开心样，把计算机当玩具了。”他说
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我记得有一次午休时我坐在那里，有人进来以大人的口吻说：“看他那个开心样，把计算机当玩具了。”他说
 的没错，这就是个绝妙的玩具。而这些大人根本没认识到它的绝妙之处。&lt;/p&gt;
 &lt;p&gt;我做研究从来都不是坐在那里干想：“X这个问题很重要，所以我应该解决X。”我想也没人会这样做。人们做
 研究是因为觉得某事很好玩，才会有兴趣去做。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我努力教学生们如何作数学证明，但没有成功。如今我意识到，失败的原因在于当时我有一种错觉，总以为
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我努力教学生们如何作数学证明，但没有成功。如今我意识到，失败的原因在于当时我有一种错觉，总以为
 应该有一套严密、精确的数学论证方法，但实际上数学证明只是一种书面形式，也并没有那么严密。现在我
 已经转变了看法。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;在对 SIFT 进行验证时我们发现了一个漏洞。这种漏洞只有形式化验证才能发现，其他任何方法都发现不了。
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;在对 SIFT 进行验证时我们发现了一个漏洞。这种漏洞只有形式化验证才能发现，其他任何方法都发现不了。
 这种漏洞每两年就会导致一架飞机由于偶发的宇宙射线而坠毁。&lt;/p&gt;
 &lt;p&gt;对那些性命攸关的计算机系统而言，验证绝对是必不可少的重要环节，但现状看来却并非如此。人们仅仅依赖
 于测试。测试当然不能忽略，但它决不能替代形式化的数学验证。&lt;/p&gt;
 &lt;p&gt;程序和算法都是抽象的数学实体。它们都可以应用数学方法。所以看在上帝的份上，让我们做吧。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;回顾自己的工作成果，大多数都是纯属好运。我只是在合适的时间遇到了合适的问题，而又恰好具有合适的
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;回顾自己的工作成果，大多数都是纯属好运。我只是在合适的时间遇到了合适的问题，而又恰好具有合适的
 知识背景而已。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="stephen-cook"&gt;
+&lt;div class=&quot;section&quot; id=&quot;stephen-cook&quot;&gt;
 &lt;h2&gt;Stephen Cook&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;某些问题无法依靠算法解决，这是不可改变的基本事实。而正是这一想法吸引了我。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;某些问题无法依靠算法解决，这是不可改变的基本事实。而正是这一想法吸引了我。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;这似乎是一个非常自然而又基本的问题。显然，有些问题在原则上可以通过算法解决，但实际中却不行，因为
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;这似乎是一个非常自然而又基本的问题。显然，有些问题在原则上可以通过算法解决，但实际中却不行，因为
 等到太阳系毁灭也不会算完。所以考察问题的固有难度是一个很自然的事情。&lt;/p&gt;
 &lt;p&gt;在计算机出现之前，人们只能靠手写来执行算法。这个过程极为漫长乏味，所以复杂性的问题很难引起人们的
 兴趣。现在有了强大的计算机来帮助我们，每秒执行数千次操作，自然而然就会探究到底有哪些类型的问题
 可以真正得到解决。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我们无法证明这些东西，这也是数学的这个领域里令人沮丧的地方。我们也无法证明 P 不等于 NP。因此可能
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我们无法证明这些东西，这也是数学的这个领域里令人沮丧的地方。我们也无法证明 P 不等于 NP。因此可能
 会有人发明某种聪明的并行算法，可以在多项式时间内解决某个 NP 完全问题。&lt;/p&gt;
 &lt;p&gt;在这种情况下，很难去定义进展。我们还没有接近成功，不过也有了部分的成绩。人们正在从多个不同的领域
 试图攻克这一难题。顺便说一句，P = NP 是可能的。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="leonid-levin"&gt;
+&lt;div class=&quot;section&quot; id=&quot;leonid-levin&quot;&gt;
 &lt;h2&gt;Leonid Levin&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;有时候，有些事情不能做也是件好事。有很多事情我都不希望别人对我做。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;有时候，有些事情不能做也是件好事。有很多事情我都不希望别人对我做。&lt;/p&gt;
 &lt;p&gt;这么多世纪以来，几乎所有著名的数学猜想都得到了解决，这一事实就是一个有力的证明，说明 NP 完全问题
 可以在多项式时间内解决，而不需要指数时间。数学家们往往认为历史证据表明 NP 需要指数时间，我认为
 他们完全搞反了方向。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="frederick-p-brooks"&gt;
+&lt;div class=&quot;section&quot; id=&quot;frederick-p-brooks&quot;&gt;
 &lt;h2&gt;Frederick P. Brooks&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;如果有人对你说：“你做的东西很不错，但它对我一点帮助都没有。”这其实是在提醒你要脚踏实地。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;如果有人对你说：“你做的东西很不错，但它对我一点帮助都没有。”这其实是在提醒你要脚踏实地。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我认为，在项目经理在外专设一个系统架构师是很重要的。在架构的实施过程中，有一个首席设计师以个人
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我认为，在项目经理在外专设一个系统架构师是很重要的。在架构的实施过程中，有一个首席设计师以个人
 智慧掌控整体设计也是同等重要的。这是让设计获得竞争力的唯一途径。&lt;/p&gt;
 &lt;p&gt;在《人月神话》中我曾说过要制造软件，然后适时扔掉。但我不会再做出这种言论。现在我会说，先构建一个
 最小限度的版本，将其投放到市场，开始收集反馈，然后再逐步增加功能。先制定规范，然后再构建和测试的
@@ -690,71 +684,71 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="burton-j-smith"&gt;
+&lt;div class=&quot;section&quot; id=&quot;burton-j-smith&quot;&gt;
 &lt;h2&gt;Burton J. Smith&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;几乎任何事物的速度都是可变的。任何计算机都能以某种速度模仿其他任何事物。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;几乎任何事物的速度都是可变的。任何计算机都能以某种速度模仿其他任何事物。&lt;/p&gt;
 &lt;p&gt;在涉及如此多人的设计中，你无法通晓所有事情的状态。但你必须明确自己想要什么。最重要的一点可能是：
 用自己的想象力来考虑事情，然后让大家来共同完成。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="william-daniel-hillis"&gt;
+&lt;div class=&quot;section&quot; id=&quot;william-daniel-hillis&quot;&gt;
 &lt;h2&gt;William Daniel Hillis&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;连结机器的产生是因为我意识到了一下矛盾：人脑的运行比最快的计算机还要快，但其实人脑的转换需要好
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;连结机器的产生是因为我意识到了一下矛盾：人脑的运行比最快的计算机还要快，但其实人脑的转换需要好
 几微秒的时间，而计算机只需要几纳秒。&lt;/p&gt;
 &lt;p&gt;所以很明显，大脑的组织原理是并行的，而且是大规模并行。信息就在许多非常简单的并行单元的连接中间
 传递。如果我们按照这种组织系统来制造一台计算机，就很可能完成大脑所做的事情。连结机器的设计动机
 就这么简单。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;生物学家相信，简单的数学理论通常都是错误的，因为生物系统成因众多，彼此也没有清晰的界限，基本上
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;生物学家相信，简单的数学理论通常都是错误的，因为生物系统成因众多，彼此也没有清晰的界限，基本上
 可以说是杂乱无章。生物系统确实也有美存在，但这是一种复杂、丰富之美，而不是物理学那种简约、优雅
 之美。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;大脑并不是由运算放大器构成的。但如果能理解放大器电路中的反馈原理，对于理解某些生物系统的运作方式
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;大脑并不是由运算放大器构成的。但如果能理解放大器电路中的反馈原理，对于理解某些生物系统的运作方式
 会是很有帮助的。反馈已经成为生物学中内在化的东西，而且已经根植于我们对生物体运作的认识当中。我们
 并不认为反馈出自控制论。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;明斯基和费曼都教过我如何思考，而他们思考的方式大相径庭。但他们共有的一点是乐于质疑一切。在我们的
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;明斯基和费曼都教过我如何思考，而他们思考的方式大相径庭。但他们共有的一点是乐于质疑一切。在我们的
 现实生活中有许多看似毫无疑问的假设，而他们两人都善于把这些假设挖掘出来。而且明斯基和费曼都以自己
 的工作为乐。我想这一点很重要，而且我自己也是如此。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="edward-a-feigenbaum"&gt;
+&lt;div class=&quot;section&quot; id=&quot;edward-a-feigenbaum&quot;&gt;
 &lt;h2&gt;Edward A. Feigenbaum&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;医学很棒的一点在于，它是一个极好的演练沙盘，启发式无处不在。医学就是这样。这里面几乎没有生搬
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;医学很棒的一点在于，它是一个极好的演练沙盘，启发式无处不在。医学就是这样。这里面几乎没有生搬
 硬套，也从不像白纸黑字那样绝对。医学是一门艺术，需要经验和知识，也有规矩可循，能进行准确的猜测
 和良好的判断。所有这些综合在一起，再加上推理过程，当然还有真实的数据，医生会测量病患的各种体征，
 做各种化验，然后努力对检测结果进行判断。&lt;/p&gt;
 &lt;p&gt;人工智能方法就是在满是不成形的问题的领域中进行选择的方法。一般领域内的许多可计算问题，不管是物理
 计算还是工资计算，都是成形的问题，有对应的算法。解决这种问题我们不需要做任何究查。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;一门新技术不会自己走进现实生活。它只能依靠个人或组织对这种技术的拥护才能融入这个世界。技术不会
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;一门新技术不会自己走进现实生活。它只能依靠个人或组织对这种技术的拥护才能融入这个世界。技术不会
 推销自己。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我们必须认清，人类是一个智能主体，而计算机则是另一个智能主体，二者的能力可以互为补充。我们必须
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我们必须认清，人类是一个智能主体，而计算机则是另一个智能主体，二者的能力可以互为补充。我们必须
 设计出自己的系统，以便两者能够协同工作，从而获得更好的结果。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="douglas-lenat"&gt;
+&lt;div class=&quot;section&quot; id=&quot;douglas-lenat&quot;&gt;
 &lt;h2&gt;Douglas Lenat&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;有多少人一生中能有2%到10%的机会对这个世界产生重大的影响？如果真有这样的机会，你应该抓住它。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;有多少人一生中能有2%到10%的机会对这个世界产生重大的影响？如果真有这样的机会，你应该抓住它。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;19世纪的物理学和直到当今的工程学都对人类的“身体”机能提供了“增强”。我们能到达的地方比步行的
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;19世纪的物理学和直到当今的工程学都对人类的“身体”机能提供了“增强”。我们能到达的地方比步行的
 距离更远，速度也更快。我们彼此间能交流的距离也完全超过了大声喊叫的范围。&lt;/p&gt;
 &lt;p&gt;人工智能的目标就是一种“智能增强”，这样我们就能更聪明，更具创造力，可以更快地解决更难的问题，
 同时减少遗忘，增强记忆。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;学习只在已知事物的边缘发生，所以人们只可能学到与自己已知相似的新东西。如果你试图学习的东西与你
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;学习只在已知事物的边缘发生，所以人们只可能学到与自己已知相似的新东西。如果你试图学习的东西与你
 已知的东西距离不远，那么你就能学会。这个边缘的范围越大（你已知的东西越多），就越有可能发现新的
 事物。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;直到现在，人类的生命都是线性有限的。我们在一个地方存在一段时间，生命的结束就是死亡。而这一切可能
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;直到现在，人类的生命都是线性有限的。我们在一个地方存在一段时间，生命的结束就是死亡。而这一切可能
 会发生改变。想象一下每个人在网络空间中都有多个智能主体可以作为替身，可以去做我们喜欢的任何事情，
 而真实的意识则停留在一个肉体中。只要通信带宽足够大，在任何时候我们都可以将自己的精神迁徙到这些
 另外的主体中去。一个人死亡后，他或她的某些主体还会继续存在。福瑞德死了，但还有一些福瑞德在我们
@@ -762,7 +756,7 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id1"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id1&quot;&gt;
 &lt;h2&gt;结语&lt;/h2&gt;
 &lt;p&gt;最后，引用书中后记的几段话（注意，本书写于1998年），以做结语。&lt;/p&gt;
 &lt;p&gt;50年前，最优秀的工程师和物理学家所面临的难题仅仅是如何让硬件设备能够运转起来。&lt;/p&gt;
@@ -791,34 +785,33 @@ Hillis 开始研究两种完全不同的大规模并行设计方法。如今 Bro
     <content type="html">&lt;p&gt;在 Python 编程中，生成器（Generator）和迭代器（Iterator）是两个非常有用 + 好用的语言特性。在函数
 中使用 yield 关键字即定义了生成器对象，通过 yield 语句可以对外生成值序列，实际上就是返回了一个特殊
 的迭代器。生成器每次迭代的值( 调用 next() )都是实时生成的，其会在生成的前后对生成器对象的状态进行
-保存/恢复，从而可以间隔有序地运行代码，持续生成值。生成器的这种延迟计算特性（ &lt;a class="reference external" href="http://en.wikipedia.org/wiki/Lazy_evaluation"&gt;lazy evaluation&lt;/a&gt; ）
+保存/恢复，从而可以间隔有序地运行代码，持续生成值。生成器的这种延迟计算特性（ &lt;a class=&quot;reference external&quot; href=&quot;http://en.wikipedia.org/wiki/Lazy_evaluation&quot;&gt;lazy evaluation&lt;/a&gt; ）
 在很多情况下都非常有用，最典型的，可以让程序动态遍历那些需要可观资源（CPU 或 I/O）生成的对象，平摊
 生成对象的时空开销。在日常的 Python 编程中，用生成器搭配程序中的一些 for 循环结构，往往可以减少程
-序实现的逻辑复杂度。为什么？因为我们可以将控制循环的逻辑转移到生成器中 &lt;a class="footnote-reference" href="#id4" id="id1"&gt;[1]&lt;/a&gt; ， 从而将不同的处理逻辑
+序实现的逻辑复杂度。为什么？因为我们可以将控制循环的逻辑转移到生成器中 &lt;a class=&quot;footnote-reference&quot; href=&quot;#id4&quot; id=&quot;id1&quot;&gt;[1]&lt;/a&gt; ， 从而将不同的处理逻辑
 分离开来，各个击破，当然会好处理不少。&lt;/p&gt;
-&lt;div class="section" id="id2"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id2&quot;&gt;
 &lt;h2&gt;来看看 itertools.tee&lt;/h2&gt;
 &lt;p&gt;为了更方便地在实际环境中使用生成器和迭代器，标准库里的 itertools 模块对一些常用的辅助操作进行了封
-装，提供了许多有用的函数。 tee(iterable[, n] ) 就是其中一个很有趣的函数，在 &lt;a class="reference external" href="http://docs.python.org/library/itertools.html#itertools.tee"&gt;官方文档的描述里&lt;/a&gt; ，
+装，提供了许多有用的函数。 tee(iterable[, n] ) 就是其中一个很有趣的函数，在 &lt;a class=&quot;reference external&quot; href=&quot;http://docs.python.org/library/itertools.html#itertools.tee&quot;&gt;官方文档的描述里&lt;/a&gt; ，
 其作用是为一个可迭代对象生成n个独立的迭代器。如果只是看文档中的文字介绍，还是有点难理解到底 tee 的
 作用是什么。当然还是代码的解释最直接，下面我们会动手动眼来看看如何使用生成器来实现上面所说的功能。
 首先我们先来看下，与 tee 函数效果相同的一个简单 Python 代码实现（为了能更方便进行讲解，我们将该
 函数名改为 tee1），&lt;/p&gt;
-&lt;pre class="code python literal-block"&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;collections&lt;/span&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;collections&lt;/span&gt;
 
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;tee1&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iterable&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="n"&gt;it&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;iter&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iterable&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="n"&gt;deques&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;collections&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;deque&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;)]&lt;/span&gt;
-    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;gen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mydeque&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-        &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="n"&gt;mydeque&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;             &lt;span class="c"&gt;# when the local deque is empty&lt;/span&gt;
-                &lt;span class="n"&gt;newval&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;next&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;it&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;       &lt;span class="c"&gt;# fetch a new value and&lt;/span&gt;
-                &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;deques&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;        &lt;span class="c"&gt;# load it to all the deques&lt;/span&gt;
-                    &lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;newval&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-            &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;mydeque&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;popleft&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;tuple&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;deques&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;tee1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;iterable&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;it&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;iter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;iterable&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;deques&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;collections&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;deque&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;range&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;gen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mydeque&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;not&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mydeque&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;             &lt;span class=&quot;c&quot;&gt;# when the local deque is empty&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;newval&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;it&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;       &lt;span class=&quot;c&quot;&gt;# fetch a new value and&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;deques&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;        &lt;span class=&quot;c&quot;&gt;# load it to all the deques&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;newval&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;yield&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mydeque&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;popleft&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;tuple&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;deques&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;上面的代码利用了闭包和生成器的特性，很直白简单地实现了 tee 函数的功能，相当漂亮的代码。函数可接收
 两个参数，包括可迭代对象 iterable 以及默认值为2的生成数n。为了缓存数据，生成了n个 deque 实例来做
 数据容器，赋值于 deques 变量，之所以使用 deque 是因为其高效的序列两端操作。然后，在内部定义 gen
@@ -833,25 +826,24 @@ Hillis 开始研究两种完全不同的大规模并行设计方法。如今 Bro
 几个生成器进行相关操作，但实际上只做一次的生成期运算。&lt;/p&gt;
 &lt;p&gt;但 tee1 的实现显然还有改进的余地，最明显的，tee1 中为每个 gen 生成器都缓存了一份数据，这毫无疑问
 会造成数据冗余和操作冗余。好吧，让我们对 tee1 进行一些修改。下面的 tee2 便是改造的成果:&lt;/p&gt;
-&lt;pre class="code python literal-block"&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;collections&lt;/span&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;collections&lt;/span&gt;
 
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;tee2&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iterable&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="n"&gt;it&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;iter&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iterable&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="n"&gt;items&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;collections&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;deque&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-    &lt;span class="n"&gt;iter_index&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;        &lt;span class="c"&gt;# hold the indexes for the gen objects&lt;/span&gt;
-    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;gen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-        &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-            &lt;span class="n"&gt;maxindex&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;max&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;maxindex&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;    &lt;span class="c"&gt;# when the index is the max index&lt;/span&gt;
-                &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;next&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;it&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;               &lt;span class="c"&gt;# fetch a new value and&lt;/span&gt;
-                &lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;            &lt;span class="c"&gt;# load it to the items&lt;/span&gt;
-            &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-                &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;]]&lt;/span&gt;
-            &lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
-            &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt;
-    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;tuple&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-&lt;/pre&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;tee2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;iterable&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;it&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;iter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;iterable&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;items&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;collections&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;deque&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;iter_index&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;        &lt;span class=&quot;c&quot;&gt;# hold the indexes for the gen objects&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;gen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;maxindex&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;max&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;iter_index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;iter_index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;maxindex&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;    &lt;span class=&quot;c&quot;&gt;# when the index is the max index&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;it&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;               &lt;span class=&quot;c&quot;&gt;# fetch a new value and&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;items&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;            &lt;span class=&quot;c&quot;&gt;# load it to the items&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;items&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;iter_index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]]&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;iter_index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;yield&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;tuple&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;range&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;现在，每个 gen 生成器都共享一份数据缓存（items），并都维护着一份自身位置的指针（index）。每个 gen 在
 生成值时会对 index 进行检测，若该 index 处于末尾位置，则对 iterable 取新值并缓存到外部的 items 数
 据容器中，然后像其他情况那样返回数据容器中 index 位置的对象。恩，看来 tee2 已经解决了 tee1 中数据冗
@@ -861,36 +853,35 @@ Hillis 开始研究两种完全不同的大规模并行设计方法。如今 Bro
 的操作！这可能导致的后果是，如果 iterable 对象会且需要持续生成值（有可能是无限生成），我们机器中的
 小小内存便会逐渐被填满，这可不是什么好事情，对吧。没办法，我们需要对代码继续进行改进，这不，就出现
 了下面的 tee3。 :-)&lt;/p&gt;
-&lt;pre class="code python literal-block"&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;collections&lt;/span&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;collections&lt;/span&gt;
 
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;tee3&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iterable&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="n"&gt;it&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;iter&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iterable&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="n"&gt;items&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;collections&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;deque&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-    &lt;span class="n"&gt;iter_index&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;n&lt;/span&gt;        &lt;span class="c"&gt;# hold the indexes for those gen object&lt;/span&gt;
-    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;gen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-        &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="bp"&gt;True&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-            &lt;span class="n"&gt;maxindex&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;minindex&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;max&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="nb"&gt;min&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;maxindex&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-                &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;next&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;it&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-                &lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;append&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;value&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-            &lt;span class="k"&gt;elif&lt;/span&gt; &lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;minindex&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-                &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;count&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;minindex&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-                    &lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;popleft&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-            &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-                &lt;span class="n"&gt;value&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;items&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;minindex&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-            &lt;span class="n"&gt;iter_index&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;gid&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
-            &lt;span class="k"&gt;yield&lt;/span&gt; &lt;span class="n"&gt;value&lt;/span&gt;
-    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;tuple&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;gen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;n&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-&lt;/pre&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;tee3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;iterable&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;it&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;iter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;iterable&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;items&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;collections&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;deque&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;iter_index&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;        &lt;span class=&quot;c&quot;&gt;# hold the indexes for those gen object&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;gen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;maxindex&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minindex&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;max&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;iter_index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;min&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;iter_index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;iter_index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;maxindex&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;it&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;items&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;elif&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;iter_index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minindex&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;items&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;iter_index&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;count&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;minindex&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                    &lt;span class=&quot;n&quot;&gt;items&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;popleft&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;items&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;iter_index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minindex&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;iter_index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;yield&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;tuple&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;range&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;为了避免数据容器的数据“只进不出”，我们必须判断特定情况，从数据容器中 POP 出值。首先需要想的是，
 数据容器里的值在什么时候能被抛弃。毫无疑问，只有当该值为一个“无用值”时，也就是这个值在往后都不可
 能会被使用的时候，我们就可以将该值从数据容器中 POP 掉。&lt;/p&gt;
 &lt;p&gt;搞清楚了相关逻辑，很快就能找到解决方法。当一个 gen 对象对外生成值时，如果其维护的 index 为索引
 集合（ iter_index ）中的最小索引，且在当前唯一拥有这个索引，那么处于 index 的值在生成后将成为一
 个“无用值”。对应 tee3 中的代码是:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
+&lt;pre class=&quot;literal-block&quot;&gt;
 elif iter_index[gid] == minindex:
     value = items[0]
     if iter_index.count(minindex) == 1:
@@ -900,11 +891,11 @@ elif iter_index[gid] == minindex:
 很多不完美的地方（例如代码中还没有任何异常检测）。除此之外，现在的 tee3 对比 tee1 是繁复了许多，
 也晦涩难懂了许多。典型的，为了在一般情况下正确取值，必须计算当前索引与最小索引间的差值，来获得 gen
 对象在数据容器中对应的值，于是代码牺牲了可读性:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
+&lt;pre class=&quot;literal-block&quot;&gt;
 value = items[iter_index[gid] - minindex]
 &lt;/pre&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id3"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id3&quot;&gt;
 &lt;h2&gt;最后&lt;/h2&gt;
 &lt;p&gt;还有一点可以在 tee3 的代码中看出来， tee 函数为我们节省了重复计算的开销，但是缓存大量对象的隐患还是
 存在。想像一下，在 tee 返回的多个 gen 生成器对象里，只要有一个生成器一直不生成值，那么很不幸，tee
@@ -912,11 +903,11 @@ value = items[iter_index[gid] - minindex]
 术都是有权衡的，应该怎样使用 tee 函数，需要根据具体的情景来思考。&lt;/p&gt;
 &lt;p&gt;最后，还想再说一句，不要忽视 Python 强大的动态特性，我们可以作出许多有趣实效的设计，而无需拘泥于一些
 特定思想或模式。&lt;/p&gt;
-&lt;hr class="docutils" /&gt;
-&lt;table class="docutils footnote" frame="void" id="id4" rules="none"&gt;
-&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
-&lt;tbody valign="top"&gt;
-&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id1"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;有时候，循环控制会很复杂，容易作出糟糕的设计，最典型的就是那无止境的 while True 循环 ;-)&lt;/td&gt;&lt;/tr&gt;
+&lt;hr class=&quot;docutils&quot; /&gt;
+&lt;table class=&quot;docutils footnote&quot; frame=&quot;void&quot; id=&quot;id4&quot; rules=&quot;none&quot;&gt;
+&lt;colgroup&gt;&lt;col class=&quot;label&quot; /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign=&quot;top&quot;&gt;
+&lt;tr&gt;&lt;td class=&quot;label&quot;&gt;&lt;a class=&quot;fn-backref&quot; href=&quot;#id1&quot;&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;有时候，循环控制会很复杂，容易作出糟糕的设计，最典型的就是那无止境的 while True 循环 ;-)&lt;/td&gt;&lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
@@ -936,7 +927,7 @@ value = items[iter_index[gid] - minindex]
 一直认为自己正亲身参与自上世纪末开始的信息化浪潮，并看到了信息科技的进步正不断加快全球信息的流动
 （以及产生）。但是，工业革命带来的环境污染，现代热武器战争的疯狂（一战与二战），因为能源矿产需求
 正变得千疮百孔的土地，无一不是让人触目惊心的事实，科技发展带来的“恶”同样巨大。&lt;/p&gt;
-&lt;p&gt;最近看了 KK (Kevin Kelly) 的《 &lt;a class="reference external" href="http://book.douban.com/subject/6965746/"&gt;科技想要什么&lt;/a&gt; 》(What Technology Wants) ，感觉非常有趣，在阅读
+&lt;p&gt;最近看了 KK (Kevin Kelly) 的《 &lt;a class=&quot;reference external&quot; href=&quot;http://book.douban.com/subject/6965746/&quot;&gt;科技想要什么&lt;/a&gt; 》(What Technology Wants) ，感觉非常有趣，在阅读
 的过程中获得了许多有益的思考。书中 KK 以宇宙（生命）的眼光来看待科技，对科技进行了各种高屋建瓴的
 思考，科技不是我们眼中“冷冰冰”的存在，科技伴随着生命起源而生，科技是生物界的第七种生命形态，科技
 拥抱生命并提供多样性，科技将成为人类生命的延伸。&lt;/p&gt;
@@ -976,20 +967,20 @@ value = items[iter_index[gid] - minindex]
     </author>
     <content type="html">&lt;p&gt;干净优雅，就是 Python 在我心中的主要印象。&lt;/p&gt;
 &lt;p&gt;当然 Python 绝不是什么完美的编程语言，但其独特的编程风格确实很招人喜爱。得益于强制缩进和优秀的
-编码规范（类 &lt;a class="reference external" href="http://www.python.org/dev/peps/pep-0008/"&gt;PEP8&lt;/a&gt; 和 &lt;a class="reference external" href="http://www.python.org/dev/peps/pep-0020/"&gt;The Zen of Python&lt;/a&gt; ），使用 Python 编写的代码一般都能具有颇高的
+编码规范（类 &lt;a class=&quot;reference external&quot; href=&quot;http://www.python.org/dev/peps/pep-0008/&quot;&gt;PEP8&lt;/a&gt; 和 &lt;a class=&quot;reference external&quot; href=&quot;http://www.python.org/dev/peps/pep-0020/&quot;&gt;The Zen of Python&lt;/a&gt; ），使用 Python 编写的代码一般都能具有颇高的
 可读性。结合 Python 强大的动态特性（如 duck-typing, closure, lazy evaluation 等），我们可以
 大幅度降低解决问题所需的代码量。代码量越少意味着可能存在的 Bug 也就越少，也意味着工作量的降低，
 从而提高我们的生产力，让程序质量更容易得到保障和维护。&lt;/p&gt;
 &lt;p&gt;每门程序设计语言都有其最佳实践的领域，对于 Python 来说，其适合于那些对执行效率不敏感，逻辑处理
-相对复杂的场景，典型的就是构建Web应用啦（君不见 &lt;a class="reference external" href="https://www.djangoproject.com/"&gt;Django&lt;/a&gt; , &lt;a class="reference external" href="http://www.tornadoweb.org/"&gt;Tornado&lt;/a&gt; , &lt;a class="reference external" href="http://flask.pocoo.org/"&gt;Flask&lt;/a&gt; , etc）。啊，
+相对复杂的场景，典型的就是构建Web应用啦（君不见 &lt;a class=&quot;reference external&quot; href=&quot;https://www.djangoproject.com/&quot;&gt;Django&lt;/a&gt; , &lt;a class=&quot;reference external&quot; href=&quot;http://www.tornadoweb.org/&quot;&gt;Tornado&lt;/a&gt; , &lt;a class=&quot;reference external&quot; href=&quot;http://flask.pocoo.org/&quot;&gt;Flask&lt;/a&gt; , etc）。啊，
 对了，Python 用于快速原型构建也是出了名的好用。事实上， Python 因为其对C颇强的亲和力，在一些
-需要复杂逻辑处理和高性能的领域也有很多的建树，例如科学计算领域（强大的 &lt;a class="reference external" href="http://www.scipy.org/"&gt;SciPy&lt;/a&gt; 和 &lt;a class="reference external" href="http://numpy.scipy.org/"&gt;NumPy&lt;/a&gt; ）和
-图像处理领域（很有用的 &lt;a class="reference external" href="http://www.pythonware.com/products/pil/"&gt;PIL&lt;/a&gt; ）。&lt;/p&gt;
+需要复杂逻辑处理和高性能的领域也有很多的建树，例如科学计算领域（强大的 &lt;a class=&quot;reference external&quot; href=&quot;http://www.scipy.org/&quot;&gt;SciPy&lt;/a&gt; 和 &lt;a class=&quot;reference external&quot; href=&quot;http://numpy.scipy.org/&quot;&gt;NumPy&lt;/a&gt; ）和
+图像处理领域（很有用的 &lt;a class=&quot;reference external&quot; href=&quot;http://www.pythonware.com/products/pil/&quot;&gt;PIL&lt;/a&gt; ）。&lt;/p&gt;
 &lt;p&gt;只要实际使用过 Python 去解决问题，很快会喜欢上这门语言。在学习 Python 之初，我写过好一些小脚本
 来自娱自乐，用来管理资源，以及获取资源（有爱的漫画和性感美女图是不能少的，lol）。而现在，自己也
 在工作中使用 Python 来处理实际问题。在使用 Python 编程的实践中，逐渐感悟到了一个 Python 程序
 设计最佳实践，扁平化设计。当然，这所谓的最佳实践仅是个人的愚见，归纳出来有益身心健康哈。 :-)&lt;/p&gt;
-&lt;div class="section" id="id2"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id2&quot;&gt;
 &lt;h2&gt;扁平化设计&lt;/h2&gt;
 &lt;p&gt;通过良好的设计，使用 Python 编写的代码一般都能具有较好的模块性，即对复杂度的正常封装，以及定义
 清晰的调用接口。宏观来看，有了定义良好的模块，我们需要解决的问题还有很多，模块间协作和模块间通信
@@ -1022,7 +1013,7 @@ value = items[iter_index[gid] - minindex]
 还需要更多的实践才能对扁平化设计有更多的认识。但是我依旧认为（起码现在），扁平化设计是简洁编程
 的一种体现，而且很适合用于 Python 程序设计。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id3"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id3&quot;&gt;
 &lt;h2&gt;最后&lt;/h2&gt;
 &lt;p&gt;从程序设计的角度来看，简洁清晰的代码通常更为优雅，这意味着可以更好的应对变化，可以无拘束地作出许
 多有趣实效的设计，而不需要拘泥于一些特定思想或模式（上面论述的扁平化设计便是一例）。 Python 朴实
@@ -1044,11 +1035,11 @@ value = items[iter_index[gid] - minindex]
     </author>
     <content type="html">&lt;p&gt;还是前几月的时候，几乎在同一时间，自己接触到了 Gevent 和 Tornado 这两个已经不新的东西，那时那个
 思绪混乱啊！似乎都支持异步，似乎都是无阻塞（non-blocking），性能似乎都好到个不行
-（&lt;a class="reference external" href="http://nichol.as/benchmark-of-python-web-servers"&gt;猛击&lt;/a&gt;）。知道两者虽是单线程，
+（&lt;a class=&quot;reference external&quot; href=&quot;http://nichol.as/benchmark-of-python-web-servers&quot;&gt;猛击&lt;/a&gt;）。知道两者虽是单线程，
 但基于无阻塞的特性，战斗力那个是嗖嗖地上涨，运用得当的话，hold住上K个连接不是问题。虽然很感
 兴趣，虽然完全没弄清楚两者内里的实质，但为了完成工作，略略了解了基本的应用后，卷起手袖就上啦。
 当然，作为一个有志的程序员，在满足了现实的迫切需要后，一颗渴望知其所以然的心便开始蠢蠢欲动。&lt;/p&gt;
-&lt;div class="section" id="tornado"&gt;
+&lt;div class=&quot;section&quot; id=&quot;tornado&quot;&gt;
 &lt;h2&gt;从 Tornado 说起&lt;/h2&gt;
 &lt;p&gt;刚开始，对 Tornado 的感觉最为新鲜，在官网介绍里其是一个无阻塞的Web服务器以及相关工具的集合，但
 个人更为倾向其为一个颇为完备的微型 web 框架。Tornado 性能好的关键是其无阻塞异步的特性，但这魔术
@@ -1068,30 +1059,29 @@ I/O 事件啦。啊，似乎还有一个问题，回调函数要如何与 I/O �
 &lt;p&gt;Tornado 的核心是 ioloop 和 iostream 这两个模块，前者提供了一个高效的 I/O 事件循环，后者则封装了
 一个无阻塞的 socket 。通过向 ioloop 中添加网络 I/O 事件，利用无阻塞的 socket ，再搭配相应的回调
 函数，便可达到梦寐以求的高效异步执行啦。多说无益，来看一下具体的示例：&lt;/p&gt;
-&lt;pre class="code python literal-block"&gt;
-&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;tornado&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;ioloop&lt;/span&gt;
-&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;tornado.httpclient&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;AsyncHTTPClient&lt;/span&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;tornado&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ioloop&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;tornado.httpclient&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;AsyncHTTPClient&lt;/span&gt;
 
-&lt;span class="n"&gt;urls&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;'http://www.google.com'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;'http://www.yandex.ru'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;'http://www.python.org'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;urls&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;http://www.google.com&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;http://www.yandex.ru&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;http://www.python.org&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
 
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;print_head&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;'&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;: &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt; bytes: &lt;/span&gt;&lt;span class="si"&gt;%r&lt;/span&gt;&lt;span class="s"&gt;'&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-                                 &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
-                                 &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;[:&lt;/span&gt;&lt;span class="mi"&gt;50&lt;/span&gt;&lt;span class="p"&gt;]))&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;print_head&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;%s&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;: &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;%s&lt;/span&gt;&lt;span class=&quot;s&quot;&gt; bytes: &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;%r&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                 &lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
+                                 &lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;50&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
 
-&lt;span class="n"&gt;http_client&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;AsyncHTTPClient&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-&lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;urls&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-    &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;'Starting &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;'&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="n"&gt;http_client&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fetch&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;print_head&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="n"&gt;ioloop&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;IOLoop&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;instance&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;start&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-&lt;/pre&gt;
+&lt;span class=&quot;n&quot;&gt;http_client&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;AsyncHTTPClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urls&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;Starting &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;%s&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;http_client&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fetch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;print_head&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;ioloop&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IOLoop&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;instance&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;start&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;因为使用了 AsyncHTTPClient 来处理请求操作，整个示例是异步执行的，即三个url请求无等待的依次发出。
 我们可以看到 fetch 方法使用了 print_head 函数来作为回调函数，这意味着，当 fetch 完成了请求操作，
 相应的 print_head 函数便会被触发调用。恩，... 额，...，乍看起来，使用 Tornado 进行异步编程似乎
 并不难，让人跃跃欲试。但实际上，在现实生活中，事件驱动的编程还是会很费脑力，需要一定的创造性思维。
 不过，这也许是 Tornado 受欢迎的原因之一呢。 :)&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="gevent"&gt;
+&lt;div class=&quot;section&quot; id=&quot;gevent&quot;&gt;
 &lt;h2&gt;再来看下 Gevent&lt;/h2&gt;
 &lt;p&gt;Gevent 是基于协程（coroutine）实现的 Python 网络库，使用了轻量级的 greenlet 作为执行单元，并
 基于 libevent 事件循环构建了直观的调用接口。&lt;/p&gt;
@@ -1101,8 +1091,8 @@ I/O 事件啦。啊，似乎还有一个问题，回调函数要如何与 I/O �
 肯定是会很灵活，但要调度的话可是很有难度的吧？调度的方法暂时不谈，除了更为灵活外，自行调度的直接
 结果当然就是省去了系统调度（什么用户态转内核态，以及什么 context switch），因此协程间切换的资源
 消耗很小，再配合协程生成成本很低的另一特点，这可真是相当的美妙。事实上，Python 语言本身就支持基础
-的协程的概念，generator 是其中的产物（&lt;a class="reference external" href="http://www.python.org/dev/peps/pep-0342/"&gt;这里&lt;/a&gt;）。&lt;/p&gt;
-&lt;p&gt;对于 Gevent，其使用的协程实际上就是 &lt;a class="reference external" href="http://greenlet.readthedocs.org/en/latest/index.html"&gt;greenlet&lt;/a&gt; 。当你使用 greenlet 生成了一些协程，就可以在这些
+的协程的概念，generator 是其中的产物（&lt;a class=&quot;reference external&quot; href=&quot;http://www.python.org/dev/peps/pep-0342/&quot;&gt;这里&lt;/a&gt;）。&lt;/p&gt;
+&lt;p&gt;对于 Gevent，其使用的协程实际上就是 &lt;a class=&quot;reference external&quot; href=&quot;http://greenlet.readthedocs.org/en/latest/index.html&quot;&gt;greenlet&lt;/a&gt; 。当你使用 greenlet 生成了一些协程，就可以在这些
 协程里不断跳转执行，两个 greenlet 之间的跳转被称为切换（switch）。通过切换，我们就可以实现对协程
 的调度。还应该知道的是，每个 greenlet 都拥有一个父 greenlet ，这是在 greenlet 初始化时就确定的。
 当一个 greenlet 执行完毕后，执行权会切换到其父 greenlet 中。实际上，所有的 greenlet 会被组织成
@@ -1119,25 +1109,24 @@ I/O 等待时正确地进行切换，从而实现无阻塞的异步执行。&lt;
 无阻塞的 I/O 事件处理。怎样，是否感觉相当的有趣？ :)&lt;/p&gt;
 &lt;p&gt;Gevent 了不得的地方还在于，我们能像编写一般程序那样来编写异步程序，这可是弥足珍贵。为了更直观的
 显示，让我们来看一下具体的运行示例:&lt;/p&gt;
-&lt;pre class="code python literal-block"&gt;
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;gevent&lt;/span&gt;
-&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;gevent&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;monkey&lt;/span&gt;
-&lt;span class="c"&gt;# patches stdlib (including socket and ssl modules) to cooperate with other greenlets&lt;/span&gt;
-&lt;span class="n"&gt;monkey&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;patch_all&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;gevent&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;gevent&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;monkey&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# patches stdlib (including socket and ssl modules) to cooperate with other greenlets&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;monkey&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;patch_all&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
 
-&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;urllib2&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;urllib2&lt;/span&gt;
 
-&lt;span class="n"&gt;urls&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;'http://www.google.com'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;'http://www.yandex.ru'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;'http://www.python.org'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;urls&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;http://www.google.com&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;http://www.yandex.ru&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&amp;#39;http://www.python.org&amp;#39;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
 
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;print_head&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;'Starting &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;'&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-    &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;urllib2&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;urlopen&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-    &lt;span class="k"&gt;print&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;'&lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt;: &lt;/span&gt;&lt;span class="si"&gt;%s&lt;/span&gt;&lt;span class="s"&gt; bytes: &lt;/span&gt;&lt;span class="si"&gt;%r&lt;/span&gt;&lt;span class="s"&gt;'&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;[:&lt;/span&gt;&lt;span class="mi"&gt;50&lt;/span&gt;&lt;span class="p"&gt;]))&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;print_head&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;Starting &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;%s&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urlopen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;%s&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;: &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;%s&lt;/span&gt;&lt;span class=&quot;s&quot;&gt; bytes: &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;%r&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&amp;#39;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;50&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
 
-&lt;span class="n"&gt;jobs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;gevent&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;spawn&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;print_head&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;urls&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;jobs&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;gevent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;spawn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;print_head&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;url&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urls&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
 
-&lt;span class="n"&gt;gevent&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;joinall&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;jobs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;
+&lt;span class=&quot;n&quot;&gt;gevent&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;joinall&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;jobs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;上面示例做的事情实际上跟前面 Tornado 的示例是一样，同样是异步的对url进行请求。在我看来，使用
 Gevent 进行编程，无论是可读性还是可操作性都能让人满意。但也要清楚，在实际操作中，为了达到较理想
 效果，经常还是需要根据不同的情况对代码进行一些相应的“雕琢”。还有一点很常被人忽略， Gevent 是
@@ -1145,7 +1134,7 @@ Gevent 进行编程，无论是可读性还是可操作性都能让人满意。�
 并不是很好的选择。总的来说，Gevent 确实很讨人喜爱，性能好，开销小，代码易维护，是广大 pythoner
 手中的一大利器。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id3"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id3&quot;&gt;
 &lt;h2&gt;总要总结一下&lt;/h2&gt;
 &lt;p&gt;作为一名 Python 程序员，在探究和使用 Tornado 与 Gevent 的过程里，除了得到许多思考的乐趣外，最
 让人高兴的是收获了一些全新的视野。使用 Python 编程的好处之一便是，可以很容易地跳出语言的框框去看
@@ -1173,7 +1162,7 @@ it out of simple modules connected by well-defined interfacs, so that most
 problems are local and you can have some hope of fixing or optimizing a part
 without breaking the whole.&lt;/p&gt;
 &lt;p&gt;还记得初始编程那会，在古董级的 Turbo C 3.0 上照着书操弄着初始的 C语言，什么都不懂，是如此的质朴。
-但人是会进步的，在数次痛苦经历的洗礼，以及多本经典的好书 &lt;a class="footnote-reference" href="#id3" id="id1"&gt;[1]&lt;/a&gt; 的指导下，逐渐意识到，要想在跟复杂
+但人是会进步的，在数次痛苦经历的洗礼，以及多本经典的好书 &lt;a class=&quot;footnote-reference&quot; href=&quot;#id3&quot; id=&quot;id1&quot;&gt;[1]&lt;/a&gt; 的指导下，逐渐意识到，要想在跟复杂
 度和需求变化的战斗中不至于一败涂地，必须尽量保持模块间的正交性，紧密耦合的模块将导致修改局部而牵
 动全局的后果；还要做好模块的信息隐藏，包括对于复杂和易变部分的封装，以及定义良好的模块接口；应使用
 薄胶合层来组织程序中的不同模块和层次，厚重的胶合层必然会带来额外的逻辑处理以及复杂度；不能忘了，
@@ -1183,8 +1172,8 @@ without breaking the whole.&lt;/p&gt;
 是我现在的所有。模块化不仅是编程的概念，生活中依然适用。&lt;/p&gt;
 &lt;p&gt;围绕着模块化，立即就联想到了 KISS 原则和 DRY 原则，两者都是在心中周而复始的小声音，就像是旅途中的指南
 针，指引着自己不断前行。&lt;/p&gt;
-&lt;div class="section" id="kiss"&gt;
-&lt;h2&gt;&lt;a class="reference external" href="http://en.wikipedia.org/wiki/KISS_principle"&gt;KISS原则&lt;/a&gt;&lt;/h2&gt;
+&lt;div class=&quot;section&quot; id=&quot;kiss&quot;&gt;
+&lt;h2&gt;&lt;a class=&quot;reference external&quot; href=&quot;http://en.wikipedia.org/wiki/KISS_principle&quot;&gt;KISS原则&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;对于 UNIX 哲学，一言以蔽之，Keep It Simple, Stupid!&lt;/p&gt;
 &lt;p&gt;简单可行的设计永远都是好的设计，复杂的设计意味着更难以应对变化。&lt;/p&gt;
 &lt;p&gt;小时候，自己总是认为，唯有对事情有了完全的掌握后才能将事情完美的做好。同时，有那么一种倾向，必须作
@@ -1196,23 +1185,23 @@ without breaking the whole.&lt;/p&gt;
 &lt;p&gt;为了应对变化，我们必须更为灵活。在我看来，这就是 KISS 原则最重要的含义。&lt;/p&gt;
 &lt;p&gt;而模块化的设计，正是 KISS 原则的最佳体现和实践。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="dry"&gt;
-&lt;h2&gt;&lt;a class="reference external" href="http://en.wikipedia.org/wiki/Don%27t_repeat_yourself"&gt;DRY原则&lt;/a&gt;&lt;/h2&gt;
+&lt;div class=&quot;section&quot; id=&quot;dry&quot;&gt;
+&lt;h2&gt;&lt;a class=&quot;reference external&quot; href=&quot;http://en.wikipedia.org/wiki/Don%27t_repeat_yourself&quot;&gt;DRY原则&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;重复是有害的。&lt;/p&gt;
 &lt;p&gt;最简单地来看，重复消耗更多的时间，而时间实质上就是一切。&lt;/p&gt;
 &lt;p&gt;在良好的模块化设计里，DRY 原则必然是被遵守的准则之一。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id2"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id2&quot;&gt;
 &lt;h2&gt;写在最后&lt;/h2&gt;
 &lt;p&gt;模块化设计在现代的结构化编程里是如此的普遍，每个人对于模块化都有不同的认识。我不认为自己对于模块化
 有多么深刻的了解，但在喜爱上编程的这些时间里，确实对模块化有了点点滴滴的感悟，于是写下了自己对于
 模块化的一些认知。这是此 Blog 里的第一篇文章，基于程序员世界 &amp;quot;Hello World&amp;quot; 的习惯，故将此文
 命名为 &amp;quot;Hello Modulatity&amp;quot;。&lt;/p&gt;
-&lt;hr class="docutils" /&gt;
-&lt;table class="docutils footnote" frame="void" id="id3" rules="none"&gt;
-&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
-&lt;tbody valign="top"&gt;
-&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id1"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;毫不犹豫地推荐《代码大全》、《程序员修炼之道》、《UNIX编程艺术》和《重构》等极品好书。&lt;/td&gt;&lt;/tr&gt;
+&lt;hr class=&quot;docutils&quot; /&gt;
+&lt;table class=&quot;docutils footnote&quot; frame=&quot;void&quot; id=&quot;id3&quot; rules=&quot;none&quot;&gt;
+&lt;colgroup&gt;&lt;col class=&quot;label&quot; /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign=&quot;top&quot;&gt;
+&lt;tr&gt;&lt;td class=&quot;label&quot;&gt;&lt;a class=&quot;fn-backref&quot; href=&quot;#id1&quot;&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;毫不犹豫地推荐《代码大全》、《程序员修炼之道》、《UNIX编程艺术》和《重构》等极品好书。&lt;/td&gt;&lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;

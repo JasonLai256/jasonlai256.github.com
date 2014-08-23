@@ -22,7 +22,7 @@
 &lt;p&gt;生活时而忙碌，时而悠闲，基本上是有条不紊地过着，除了脚踏实地逐步向前迈进，偶尔也会抬头仰望下星空。
 在2013年，我希望能够继续保持良好的状态，学习并探究各种有趣的事情。工作上，期待可以做出一番让自己
 和他人满意的图景。生活上，希望自己能成为一个更好的男人，做好并承担各项重要的决定和事情。&lt;/p&gt;
-&lt;div class="section" id="coding-practicing"&gt;
+&lt;div class=&quot;section&quot; id=&quot;coding-practicing&quot;&gt;
 &lt;h2&gt;coding, practicing&lt;/h2&gt;
 &lt;p&gt;毕业后，最终选择留在格安工作，原因包括下面几个。&lt;/p&gt;
 &lt;p&gt;首先，公司给出的薪水还算符合自己的心理预期。当然，我没预料到，年终几个月的经济会如此的艰难，公司
@@ -41,16 +41,16 @@
 的事情上还是有显著的不足，不够成熟，不够担当，不够细致，很多事情都还有待改进。还有很长的一段路要
 走呢。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id2"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id2&quot;&gt;
 &lt;h2&gt;终于毕业了&lt;/h2&gt;
 &lt;p&gt;大学的日子一度让我感得无法忍受，自顾自地在计算机科学技术的世界畅游。过程中，发现了思考的乐趣，找寻到
 了自己人生的目标，但也使得自己的学业几度告急。从08年入学，时间终于来到了2012年6月份，我毕业了。回想
 毕业的那天，当时自己的心情没有什么特别，很平静地听从各种安排，很平静地领取了学位证书，很平静地打包好
 行装，和女友一起坐和谐号回到了广州住处，离开了那徘徊四年之久的东莞。也正式离开了校园。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id3"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id3&quot;&gt;
 &lt;h2&gt;实习的时间&lt;/h2&gt;
-&lt;p&gt;在实习刚开始的那段时间，自己还真的是没怎么找到感觉，连公司的业务（ &lt;a class="reference external" href="http://en.wikipedia.org/wiki/Content_delivery_network"&gt;CDN&lt;/a&gt; ，内容分发网络）都没搞清楚
+&lt;p&gt;在实习刚开始的那段时间，自己还真的是没怎么找到感觉，连公司的业务（ &lt;a class=&quot;reference external&quot; href=&quot;http://en.wikipedia.org/wiki/Content_delivery_network&quot;&gt;CDN&lt;/a&gt; ，内容分发网络）都没搞清楚
 就开始进行相关的编程，些许不知所以然，唯有循规蹈矩地按照标哥的讲述以及自己的理解去实现任务。还好，
 这样的情况没有持续多久，不熟悉就花时间去学习，不确定就投入精力去实践。在实习的几个月里，也成功完成
 了数个任务，在这过程中，我的信心逐渐累积，相关的编程经验也在火速上涨。&lt;/p&gt;
@@ -58,7 +58,7 @@
 流逝，总能让我感觉到时光也在不断流逝。生命总是从一个阶段瞬间跳跃到另一个阶段，我知道自己也即将要
 跨入人生的另一阶段了。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id4"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id4&quot;&gt;
 &lt;h2&gt;寻找实习&lt;/h2&gt;
 &lt;p&gt;从刚接触 Python 编程开始，就为其简洁优雅所吸引，彼时便希望未来找一份 Python 相关开发的工作。为此，
 从去年开始，除了保持对基础 CS 相关知识和编程素养的学习，我开始有意识地去接触学习一些实际生产环境中
@@ -72,11 +72,11 @@
 几个家都发了简历，结果不知是我资历过浅，还是简历做的不好，没有几家公司有响应。其中一家在广州的公司
 来电约了个时间面试，刚好那时候需要到广州补拍毕业的证件照（自己导致的折腾事），于是约好了面试的时间
 ，打算那天拍了照后顺便去天河五山面试。&lt;/p&gt;
-&lt;p&gt;好吧，事情就发展到这里。我通过了面试，进入了这家名为格安科技，提供 &lt;a class="reference external" href="http://en.wikipedia.org/wiki/Content_delivery_network"&gt;CDN&lt;/a&gt; 基础服务的初创公司，人不
+&lt;p&gt;好吧，事情就发展到这里。我通过了面试，进入了这家名为格安科技，提供 &lt;a class=&quot;reference external&quot; href=&quot;http://en.wikipedia.org/wiki/Content_delivery_network&quot;&gt;CDN&lt;/a&gt; 基础服务的初创公司，人不
 多，地方也不大，但当时给我的感觉还不错，于是乐观的认为在这里应该能学到东西。再然后，准确的说，应该
 是两天之后，我就来上班啦。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id5"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id5&quot;&gt;
 &lt;h2&gt;最后的寒假&lt;/h2&gt;
 &lt;p&gt;随着2011年的过去，大四伊始那“精彩绚丽”的学期也终于结束了，生活总是出人意外，不过最后依然是回归
 平静。于是，学生时代的最后一个寒假也准时到来了。没什么特别，还是如往年那样回家度过，唯一不同的是

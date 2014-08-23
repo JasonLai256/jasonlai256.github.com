@@ -6,7 +6,7 @@
     <link rel="alternate" href="/feed.atom" title="Recent Blog Posts" type="application/atom+xml">
     <link type="text/css" href="/static/css/bootstrap.css" rel="stylesheet">
     <link type="text/css" href="/static/css/style.css" rel="stylesheet">
-    <link type="text/css" href="/static/css/tango.css" rel="stylesheet">
+    <link type="text/css" href="/static/css/_pygments.css" rel="stylesheet">
     
 <link type="text/css" href="/static/_pygments.css" rel="stylesheet">
 
@@ -72,8 +72,7 @@
 <p>基于简单实现和维护的思想，调度中心将只维护两个数据库，包括 done_db 和 todo_db。其中 done_db 存放已
 完成内容检测的 URLs，而 todo_db 存放待进行检测的 URLs，这些都由调度中心来进行管理。下面的代码是数据
 库和一些相关变量的初始化逻辑。</p>
-<pre class="code python literal-block">
-<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Lock</span>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Lock</span>
 <span class="kn">import</span> <span class="nn">settings</span>
 
 <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -88,7 +87,7 @@
     <span class="c"># 使用 Lock 保证线程对 LevelDB 的读写具有同步性</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">done_db_lock</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">todo_db_lock</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
-</pre>
+</pre></div>
 <p>各节点会不停地将 URLs 推送过来，其中必然存在大量的冗余。利用 done_db 和 todo_db 已存储的数据，可以
 将还没有被检测过或已 expire 了的 URLs 过滤出来，然后写入 todo_db 中，让 Workers 进程可以获取到。</p>
 <p>简单的将 url 作为 LevelDB 的键（key），通过检测 url 是否存在于两个数据库中，就可以判断该 url 是否
@@ -104,17 +103,16 @@ todo_db 存储结构:  (md5_key, url_value) 键值对
 方便 fetch 接口的调度操作。而 done_db 的值为时间戳，就是该 url 的入库时间，这样，通过检测当前的时间
 戳和 done_db 中的 timestamp_value 就可以判断 url 是否已 expire 。基于简单的数据存储结构，代码的实现
 当然也是很简单。</p>
-<pre class="code python literal-block">
-<span class="k">def</span> <span class="nf">url_existed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url_md5</span><span class="p">,</span> <span class="n">now_time</span><span class="p">):</span>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">url_existed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url_md5</span><span class="p">,</span> <span class="n">now_time</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;判断 url 在 todo_db 和 done_db 中是否存在。&quot;&quot;&quot;</span>
     <span class="n">todo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">existed_in_todo_db</span><span class="p">(</span><span class="n">url_md5</span><span class="p">)</span>
     <span class="n">done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">existed_in_done_db</span><span class="p">(</span><span class="n">url_md5</span><span class="p">,</span> <span class="n">now_time</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">todo</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">bool</span><span class="p">(</span><span class="n">done</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">existed_in_todo_db</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url_md5</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;监测 url_md5 是否存在于 todo_db 中。
-    若存在，返回对应的值，否则，返回 None。
-    &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;监测 url_md5 是否存在于 todo_db 中。</span>
+<span class="sd">    若存在，返回对应的值，否则，返回 None。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">todo_db</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">url_md5</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">value</span>
@@ -122,22 +120,21 @@ todo_db 存储结构:  (md5_key, url_value) 键值对
         <span class="k">pass</span>
 
 <span class="k">def</span> <span class="nf">existed_in_done_db</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url_md5</span><span class="p">,</span> <span class="n">now_time</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;监测 url_md5 是否存在于 done_db 中。
-    若存在，且该值的存放时间还没超过 timeout 时间，那么返回对应的值，否则，返回 None。
-    &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;监测 url_md5 是否存在于 done_db 中。</span>
+<span class="sd">    若存在，且该值的存放时间还没超过 timeout 时间，那么返回对应的值，否则，返回 None。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">done_db</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">url_md5</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">now_time</span> <span class="o">-</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">url_timeout</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">value</span>
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
         <span class="k">pass</span>
-</pre>
+</pre></div>
 <p>有了上面抽象出来的 url_existed 方法，可以很容易判断一个 url 是否归类为待处理。接下来，需要实现接收
 各节点推送 URLs 的处理逻辑了。对 URLs 进行遍历，判断是否 url_existed，若是，就写入到 todo_db 中，
 否则，忽略之。就这么简单。</p>
 <p>因为 LevelDB 支持批量写操作，先将过滤出来的 URLs 收集起来，然后集中写入到 todo_db 中去。</p>
-<pre class="code python literal-block">
-<span class="k">def</span> <span class="nf">handle_urls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">urls</span><span class="p">):</span>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">handle_urls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">urls</span><span class="p">):</span>
     <span class="n">now_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
 
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">done_db_lock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">todo_db_lock</span><span class="p">:</span>
@@ -147,12 +144,11 @@ todo_db 存储结构:  (md5_key, url_value) 键值对
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">url_existed</span><span class="p">(</span><span class="n">md5_value</span><span class="p">,</span> <span class="n">now_time</span><span class="p">):</span>
                 <span class="n">batch</span><span class="o">.</span><span class="n">Put</span><span class="p">(</span><span class="n">md5_value</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">todo_db</span><span class="o">.</span><span class="n">Write</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-</pre>
+</pre></div>
 <p>解决了待处理 URLs 的入库问题，调度中心还需要实现 fetch 和 push 接口，用于调度分发待处理 URLs 给
 各 Workers 进程，让 Workers 进程可以通过接口来获取 URLs 进行检测，然后将完成了检测的 URLs 推送回来。</p>
 <p>LevelDB 高效简单的顺序读写操作是非常的顺手。配合 done_db 和 todo_db，我们可以很容易实现这两个接口。</p>
-<pre class="code python literal-block">
-<span class="k">def</span> <span class="nf">fetch_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">fetch_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;从 todo_db 中返回 block_len 个待处理 urls.&quot;&quot;&quot;</span>
     <span class="n">rv</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">keys</span> <span class="o">=</span> <span class="p">[]</span>
@@ -180,7 +176,7 @@ todo_db 存储结构:  (md5_key, url_value) 键值对
         <span class="n">batch</span><span class="o">.</span><span class="n">Put</span><span class="p">(</span><span class="n">md5_value</span><span class="p">,</span> <span class="n">now_time</span><span class="p">)</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">done_db_lock</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">done_db</span><span class="o">.</span><span class="n">Write</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">sync</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-</pre>
+</pre></div>
 <p>好的，到现在，调度中心的任务就实现的差不多了，也就那么点东西，没什么复杂。好吧，实际上，实现整个
 系统的过程中，还是费了不少的脑力，也出现了一些没预料到的状况。现在呈现的解决方案，跟最初设想的解决
 方案相比，已经是完全变了个样。很有趣。</p>

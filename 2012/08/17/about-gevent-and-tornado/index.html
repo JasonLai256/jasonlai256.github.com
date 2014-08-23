@@ -6,7 +6,7 @@
     <link rel="alternate" href="/feed.atom" title="Recent Blog Posts" type="application/atom+xml">
     <link type="text/css" href="/static/css/bootstrap.css" rel="stylesheet">
     <link type="text/css" href="/static/css/style.css" rel="stylesheet">
-    <link type="text/css" href="/static/css/tango.css" rel="stylesheet">
+    <link type="text/css" href="/static/css/_pygments.css" rel="stylesheet">
     
 <link type="text/css" href="/static/_pygments.css" rel="stylesheet">
 
@@ -63,23 +63,22 @@ I/O 事件啦。啊，似乎还有一个问题，回调函数要如何与 I/O �
 <p>Tornado 的核心是 ioloop 和 iostream 这两个模块，前者提供了一个高效的 I/O 事件循环，后者则封装了
 一个无阻塞的 socket 。通过向 ioloop 中添加网络 I/O 事件，利用无阻塞的 socket ，再搭配相应的回调
 函数，便可达到梦寐以求的高效异步执行啦。多说无益，来看一下具体的示例：</p>
-<pre class="code python literal-block">
-<span class="kn">from</span> <span class="nn">tornado</span> <span class="kn">import</span> <span class="n">ioloop</span>
+<div class="highlight"><pre><span class="kn">from</span> <span class="nn">tornado</span> <span class="kn">import</span> <span class="n">ioloop</span>
 <span class="kn">from</span> <span class="nn">tornado.httpclient</span> <span class="kn">import</span> <span class="n">AsyncHTTPClient</span>
 
-<span class="n">urls</span> <span class="o">=</span> <span class="p">[</span><span class="s">'http://www.google.com'</span><span class="p">,</span> <span class="s">'http://www.yandex.ru'</span><span class="p">,</span> <span class="s">'http://www.python.org'</span><span class="p">]</span>
+<span class="n">urls</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;http://www.google.com&#39;</span><span class="p">,</span> <span class="s">&#39;http://www.yandex.ru&#39;</span><span class="p">,</span> <span class="s">&#39;http://www.python.org&#39;</span><span class="p">]</span>
 
 <span class="k">def</span> <span class="nf">print_head</span><span class="p">(</span><span class="n">response</span><span class="p">):</span>
-    <span class="k">print</span> <span class="p">(</span><span class="s">'</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s"> bytes: </span><span class="si">%r</span><span class="s">'</span> <span class="o">%</span> <span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s"> bytes: </span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
                                  <span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">body</span><span class="p">),</span>
                                  <span class="n">response</span><span class="o">.</span><span class="n">body</span><span class="p">[:</span><span class="mi">50</span><span class="p">]))</span>
 
 <span class="n">http_client</span> <span class="o">=</span> <span class="n">AsyncHTTPClient</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
-    <span class="k">print</span> <span class="p">(</span><span class="s">'Starting </span><span class="si">%s</span><span class="s">'</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s">&#39;Starting </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
     <span class="n">http_client</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">print_head</span><span class="p">)</span>
 <span class="n">ioloop</span><span class="o">.</span><span class="n">IOLoop</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</pre>
+</pre></div>
 <p>因为使用了 AsyncHTTPClient 来处理请求操作，整个示例是异步执行的，即三个url请求无等待的依次发出。
 我们可以看到 fetch 方法使用了 print_head 函数来作为回调函数，这意味着，当 fetch 完成了请求操作，
 相应的 print_head 函数便会被触发调用。恩，... 额，...，乍看起来，使用 Tornado 进行异步编程似乎
@@ -114,25 +113,24 @@ I/O 等待时正确地进行切换，从而实现无阻塞的异步执行。</p>
 无阻塞的 I/O 事件处理。怎样，是否感觉相当的有趣？ :)</p>
 <p>Gevent 了不得的地方还在于，我们能像编写一般程序那样来编写异步程序，这可是弥足珍贵。为了更直观的
 显示，让我们来看一下具体的运行示例:</p>
-<pre class="code python literal-block">
-<span class="kn">import</span> <span class="nn">gevent</span>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">gevent</span>
 <span class="kn">from</span> <span class="nn">gevent</span> <span class="kn">import</span> <span class="n">monkey</span>
 <span class="c"># patches stdlib (including socket and ssl modules) to cooperate with other greenlets</span>
 <span class="n">monkey</span><span class="o">.</span><span class="n">patch_all</span><span class="p">()</span>
 
 <span class="kn">import</span> <span class="nn">urllib2</span>
 
-<span class="n">urls</span> <span class="o">=</span> <span class="p">[</span><span class="s">'http://www.google.com'</span><span class="p">,</span> <span class="s">'http://www.yandex.ru'</span><span class="p">,</span> <span class="s">'http://www.python.org'</span><span class="p">]</span>
+<span class="n">urls</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;http://www.google.com&#39;</span><span class="p">,</span> <span class="s">&#39;http://www.yandex.ru&#39;</span><span class="p">,</span> <span class="s">&#39;http://www.python.org&#39;</span><span class="p">]</span>
 
 <span class="k">def</span> <span class="nf">print_head</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
-    <span class="k">print</span> <span class="p">(</span><span class="s">'Starting </span><span class="si">%s</span><span class="s">'</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s">&#39;Starting </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-    <span class="k">print</span> <span class="p">(</span><span class="s">'</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s"> bytes: </span><span class="si">%r</span><span class="s">'</span> <span class="o">%</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">data</span><span class="p">[:</span><span class="mi">50</span><span class="p">]))</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s"> bytes: </span><span class="si">%r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">data</span><span class="p">[:</span><span class="mi">50</span><span class="p">]))</span>
 
 <span class="n">jobs</span> <span class="o">=</span> <span class="p">[</span><span class="n">gevent</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">print_head</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span> <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">]</span>
 
 <span class="n">gevent</span><span class="o">.</span><span class="n">joinall</span><span class="p">(</span><span class="n">jobs</span><span class="p">)</span>
-</pre>
+</pre></div>
 <p>上面示例做的事情实际上跟前面 Tornado 的示例是一样，同样是异步的对url进行请求。在我看来，使用
 Gevent 进行编程，无论是可读性还是可操作性都能让人满意。但也要清楚，在实际操作中，为了达到较理想
 效果，经常还是需要根据不同的情况对代码进行一些相应的“雕琢”。还有一点很常被人忽略， Gevent 是

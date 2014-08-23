@@ -6,7 +6,7 @@
     <link rel="alternate" href="/feed.atom" title="Recent Blog Posts" type="application/atom+xml">
     <link type="text/css" href="/static/css/bootstrap.css" rel="stylesheet">
     <link type="text/css" href="/static/css/style.css" rel="stylesheet">
-    <link type="text/css" href="/static/css/tango.css" rel="stylesheet">
+    <link type="text/css" href="/static/css/_pygments.css" rel="stylesheet">
     
 <link type="text/css" href="/static/_pygments.css" rel="stylesheet">
 
@@ -95,26 +95,25 @@ PATHS:
 <p>上面展示的是 config.yml 中配置路径相关的信息， <cite>分发程序</cite> 可以很方便的由此获取所有有效配置文件的
 路径信息。下面的 transform 函数利用递归，可以将 config.yml 中的路径信息转换为 python 中的 list 来
 存储。简单的处理，但也很有趣。</p>
-<pre class="code python literal-block">
-<span class="kn">import</span> <span class="nn">yaml</span>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">yaml</span>
 
 <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
     <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">def</span> <span class="nf">_walk</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="n">_walk</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">key</span> <span class="o">+</span> <span class="s">'/'</span><span class="p">)</span>
+                <span class="n">_walk</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">key</span> <span class="o">+</span> <span class="s">&#39;/&#39;</span><span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="p">[</span><span class="n">_walk</span><span class="p">({</span><span class="s">''</span><span class="p">:</span><span class="n">v</span><span class="p">},</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">key</span> <span class="o">+</span> <span class="s">'/'</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">]</span>
+                <span class="p">[</span><span class="n">_walk</span><span class="p">({</span><span class="s">&#39;&#39;</span><span class="p">:</span><span class="n">v</span><span class="p">},</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">key</span> <span class="o">+</span> <span class="s">&#39;/&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">value</span><span class="p">)</span>
-    <span class="n">_walk</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="s">''</span><span class="p">)</span>
+    <span class="n">_walk</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">paths</span>
 
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">'config.yml'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;config.yml&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">conf_dict</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
-    <span class="n">paths</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">conf_dict</span><span class="p">[</span><span class="s">'PATHS'</span><span class="p">])</span>
-</pre>
+    <span class="n">paths</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">conf_dict</span><span class="p">[</span><span class="s">&#39;PATHS&#39;</span><span class="p">])</span>
+</pre></div>
 <p>利用 transform 函数将 config.yml 配置转换后，可以得到:</p>
 <pre class="literal-block">
 ['host/cn/info.yml',
@@ -160,8 +159,7 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
 数据项真正删除掉。这时候，才算最终完成了监测操作。</p>
 <p>上面的处理逻辑听起来貌似有点复杂，但实际上整体的操作还是很简单，主要是我的语言描述不够透彻简洁。
 我想，还是代码更来得简单易懂。下面的代码展示了 <cite>分发程序</cite> 初始化和更新操作的逻辑处理。</p>
-<pre class="code python literal-block">
-<span class="kn">import</span> <span class="nn">yaml</span>
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">yaml</span>
 <span class="kn">from</span> <span class="nn">config</span> <span class="kn">import</span> <span class="n">db</span>
 
 <span class="n">Configs</span> <span class="o">=</span> <span class="p">{}</span>
@@ -194,13 +192,13 @@ Host 数据收集的配置，总的可用配置项会很多，而单个配置项
                            <span class="s">&quot;WHERE `is_modified` = 1&quot;</span><span class="p">)</span>
     <span class="n">infos</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">select_modified_sql</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">infos</span><span class="p">:</span>
-        <span class="n">udp_sql</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;UPDATE `conf_info` SET `is_modified` = '0' &quot;</span>
+        <span class="n">udp_sql</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;UPDATE `conf_info` SET `is_modified` = &#39;0&#39; &quot;</span>
                    <span class="s">&quot;WHERE `id` = </span><span class="si">%s</span><span class="s">;&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">infos</span><span class="p">:</span>
             <span class="c"># 更新 Configs，然后将数据项的 is_modified 域修正为 0</span>
             <span class="n">Configs</span><span class="p">[</span><span class="n">info</span><span class="o">.</span><span class="n">title</span><span class="p">]</span> <span class="o">=</span>  <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
             <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">udp_sql</span> <span class="o">%</span> <span class="n">info</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
-</pre>
+</pre></div>
 <p>上面的代码就是 <cite>分发程序</cite> 中，监测线程实际实现的大概逻辑。看到这里，你大概有点忍耐不住要嚷嚷了，
 明明在使用数据库，当有请求时，直接向数据库查询配置数据，处理后返回就是啦。明明可以简单的实现，为
 什么要动态监测配置数据，硬生生在程序中维护多一份配置数据。</p>

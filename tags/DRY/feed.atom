@@ -27,7 +27,7 @@ it out of simple modules connected by well-defined interfacs, so that most
 problems are local and you can have some hope of fixing or optimizing a part
 without breaking the whole.&lt;/p&gt;
 &lt;p&gt;还记得初始编程那会，在古董级的 Turbo C 3.0 上照着书操弄着初始的 C语言，什么都不懂，是如此的质朴。
-但人是会进步的，在数次痛苦经历的洗礼，以及多本经典的好书 &lt;a class="footnote-reference" href="#id3" id="id1"&gt;[1]&lt;/a&gt; 的指导下，逐渐意识到，要想在跟复杂
+但人是会进步的，在数次痛苦经历的洗礼，以及多本经典的好书 &lt;a class=&quot;footnote-reference&quot; href=&quot;#id3&quot; id=&quot;id1&quot;&gt;[1]&lt;/a&gt; 的指导下，逐渐意识到，要想在跟复杂
 度和需求变化的战斗中不至于一败涂地，必须尽量保持模块间的正交性，紧密耦合的模块将导致修改局部而牵
 动全局的后果；还要做好模块的信息隐藏，包括对于复杂和易变部分的封装，以及定义良好的模块接口；应使用
 薄胶合层来组织程序中的不同模块和层次，厚重的胶合层必然会带来额外的逻辑处理以及复杂度；不能忘了，
@@ -37,8 +37,8 @@ without breaking the whole.&lt;/p&gt;
 是我现在的所有。模块化不仅是编程的概念，生活中依然适用。&lt;/p&gt;
 &lt;p&gt;围绕着模块化，立即就联想到了 KISS 原则和 DRY 原则，两者都是在心中周而复始的小声音，就像是旅途中的指南
 针，指引着自己不断前行。&lt;/p&gt;
-&lt;div class="section" id="kiss"&gt;
-&lt;h2&gt;&lt;a class="reference external" href="http://en.wikipedia.org/wiki/KISS_principle"&gt;KISS原则&lt;/a&gt;&lt;/h2&gt;
+&lt;div class=&quot;section&quot; id=&quot;kiss&quot;&gt;
+&lt;h2&gt;&lt;a class=&quot;reference external&quot; href=&quot;http://en.wikipedia.org/wiki/KISS_principle&quot;&gt;KISS原则&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;对于 UNIX 哲学，一言以蔽之，Keep It Simple, Stupid!&lt;/p&gt;
 &lt;p&gt;简单可行的设计永远都是好的设计，复杂的设计意味着更难以应对变化。&lt;/p&gt;
 &lt;p&gt;小时候，自己总是认为，唯有对事情有了完全的掌握后才能将事情完美的做好。同时，有那么一种倾向，必须作
@@ -50,23 +50,23 @@ without breaking the whole.&lt;/p&gt;
 &lt;p&gt;为了应对变化，我们必须更为灵活。在我看来，这就是 KISS 原则最重要的含义。&lt;/p&gt;
 &lt;p&gt;而模块化的设计，正是 KISS 原则的最佳体现和实践。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="dry"&gt;
-&lt;h2&gt;&lt;a class="reference external" href="http://en.wikipedia.org/wiki/Don%27t_repeat_yourself"&gt;DRY原则&lt;/a&gt;&lt;/h2&gt;
+&lt;div class=&quot;section&quot; id=&quot;dry&quot;&gt;
+&lt;h2&gt;&lt;a class=&quot;reference external&quot; href=&quot;http://en.wikipedia.org/wiki/Don%27t_repeat_yourself&quot;&gt;DRY原则&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;重复是有害的。&lt;/p&gt;
 &lt;p&gt;最简单地来看，重复消耗更多的时间，而时间实质上就是一切。&lt;/p&gt;
 &lt;p&gt;在良好的模块化设计里，DRY 原则必然是被遵守的准则之一。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id2"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id2&quot;&gt;
 &lt;h2&gt;写在最后&lt;/h2&gt;
 &lt;p&gt;模块化设计在现代的结构化编程里是如此的普遍，每个人对于模块化都有不同的认识。我不认为自己对于模块化
 有多么深刻的了解，但在喜爱上编程的这些时间里，确实对模块化有了点点滴滴的感悟，于是写下了自己对于
 模块化的一些认知。这是此 Blog 里的第一篇文章，基于程序员世界 &amp;quot;Hello World&amp;quot; 的习惯，故将此文
 命名为 &amp;quot;Hello Modulatity&amp;quot;。&lt;/p&gt;
-&lt;hr class="docutils" /&gt;
-&lt;table class="docutils footnote" frame="void" id="id3" rules="none"&gt;
-&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
-&lt;tbody valign="top"&gt;
-&lt;tr&gt;&lt;td class="label"&gt;&lt;a class="fn-backref" href="#id1"&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;毫不犹豫地推荐《代码大全》、《程序员修炼之道》、《UNIX编程艺术》和《重构》等极品好书。&lt;/td&gt;&lt;/tr&gt;
+&lt;hr class=&quot;docutils&quot; /&gt;
+&lt;table class=&quot;docutils footnote&quot; frame=&quot;void&quot; id=&quot;id3&quot; rules=&quot;none&quot;&gt;
+&lt;colgroup&gt;&lt;col class=&quot;label&quot; /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign=&quot;top&quot;&gt;
+&lt;tr&gt;&lt;td class=&quot;label&quot;&gt;&lt;a class=&quot;fn-backref&quot; href=&quot;#id1&quot;&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;毫不犹豫地推荐《代码大全》、《程序员修炼之道》、《UNIX编程艺术》和《重构》等极品好书。&lt;/td&gt;&lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;

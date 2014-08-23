@@ -20,17 +20,17 @@
 运行。而在那些计算机基础理论的后面，是数代计算机科学家研究探索的成果。这个时代的程序员无疑是幸福
 的，不必再去开拓许多基础的东西，可以站在更高的层次去解决实际问题。但同时，我很多时候都会很好奇，
 在那个使用穿孔卡纸来进行机器编程的年代，那些为计算机的魔力所吸引的人，是如何去探索发现其中的乐趣。&lt;/p&gt;
-&lt;p&gt;近段时间看了《 &lt;a class="reference external" href="http://book.douban.com/subject/10432364/"&gt;奇思妙想&lt;/a&gt; 》(Out of their Minds) 这本书。原书编写于1998年，立足于现场访谈的第一手
+&lt;p&gt;近段时间看了《 &lt;a class=&quot;reference external&quot; href=&quot;http://book.douban.com/subject/10432364/&quot;&gt;奇思妙想&lt;/a&gt; 》(Out of their Minds) 这本书。原书编写于1998年，立足于现场访谈的第一手
 记录，书中向我们展示了15位当代伟大计算机科学家的许多事情（非常汗颜自己只知道其中不到一半的前辈），
 包括描述他们过往的生活历程和工作成果。本书具有不少有趣和引人思考的内容，让我知道了大师们成长以及
 科研时期的许多事情。阅读这些东西具体有什么作用？其实我也不知道，但在阅读此书的过程中确实带给了我
 不少的思考，这就非常难得。抱着增广见闻的心态去看此书，感觉应该是非常的不错。&lt;/p&gt;
 &lt;p&gt;对了，还要感谢译者用心翻译，虽然语言间还是略显生硬，但都不太影响阅读的感觉。本书让我们一窥这些伟大
 计算机科学家的风采，在阅读的过程中，特别对书中的一些访谈内容进行了些许摘录，以做记录。&lt;/p&gt;
-&lt;div class="section" id="john-backus"&gt;
+&lt;div class=&quot;section&quot; id=&quot;john-backus&quot;&gt;
 &lt;h2&gt;John Backus&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;大多数科学家之所以成为科学家，是因为他们畏惧生活。在科学中有所成就无疑非常诱人，因为在此过程中
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;大多数科学家之所以成为科学家，是因为他们畏惧生活。在科学中有所成就无疑非常诱人，因为在此过程中
 无需与人产生冲突，无需应付艰难的人际关系，可以完全按自己的方式生活。在这个近乎纯洁的象牙塔里，
 你可以全力施展自己的才华，而没有任何痛苦。与生活中的困难相比，解决科学问题的困难简直就是微不足
 道。&lt;/p&gt;
@@ -39,48 +39,48 @@
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="john-mccarthy"&gt;
+&lt;div class=&quot;section&quot; id=&quot;john-mccarthy&quot;&gt;
 &lt;h2&gt;John McCarthy&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;如果希望计算机具有一般的智能，那么其外在结构就必须基于一般的常识和推理。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;如果希望计算机具有一般的智能，那么其外在结构就必须基于一般的常识和推理。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;所有的科学以及专业理论中都引入了常识。当你想要改进理论时，你总要回到常识推理，因为是常识推理
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;所有的科学以及专业理论中都引入了常识。当你想要改进理论时，你总要回到常识推理，因为是常识推理
 主导着你的试验。&lt;/p&gt;
 &lt;p&gt;所以，如果有人想设计出更好的象棋程序，就需要对自己的成果进行试验，让它分析各种棋局。有关进行何种
 试验的所有推理都立足于常识框架之内。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;利用逻辑表达世界中的事实的进展一直都很缓慢。亚里士多德没有发明形式体系。莱布尼茨没有发明命题演算
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;利用逻辑表达世界中的事实的进展一直都很缓慢。亚里士多德没有发明形式体系。莱布尼茨没有发明命题演算
 ，尽管这种形式体系比他和牛顿同时发明的微积分更加简单。乔治·布尔发明了命题演算，却没有发明谓词
 演算。戈特洛布·弗雷格发明了谓词演算，但从未尝试过将非单调推理形式化。我想我们人类明白，要明确地
 表达我们思维过程中的各种事实，表面来看似乎简单，实际上是很困难的。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="alan-c-kay"&gt;
+&lt;div class=&quot;section&quot; id=&quot;alan-c-kay&quot;&gt;
 &lt;h2&gt;Alan C.Kay&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;所有对事物的认识都始于我们不愿盲目地接受这个世界。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;所有对事物的认识都始于我们不愿盲目地接受这个世界。&lt;/p&gt;
 &lt;p&gt;在自然科学中，是大自然给出一个世界，而我们去探索其中的法则。对于计算机来说，却是我们自己来创建
 法则，创造一个世界。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我对人工智能真的不感兴趣，部分原因在于它太难了。我的生物学背景告诉我，为人工智能建立一套可行性
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我对人工智能真的不感兴趣，部分原因在于它太难了。我的生物学背景告诉我，为人工智能建立一套可行性
 标准绝不是件容易的事。每次我坐下来思考这个问题，总发现那些令其他人满意的成果无法令我满意。在我
 看来，他们所做的东西并不能称为是智能。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;人们想要的东西往往并不是他们真正需要的，因为两者是受不同的原因驱动的。技术应该让愿望和需求保持
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;人们想要的东西往往并不是他们真正需要的，因为两者是受不同的原因驱动的。技术应该让愿望和需求保持
 一致，并同时满足两者。这非常重要。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="edsger-w-dijkstra"&gt;
+&lt;div class=&quot;section&quot; id=&quot;edsger-w-dijkstra&quot;&gt;
 &lt;h2&gt;Edsger W. Dijkstra&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;我曾问我母亲（一位数学家）数学是不是一门很难的学科。她告诉我，你要做的就是学会所有的公式并且
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我曾问我母亲（一位数学家）数学是不是一门很难的学科。她告诉我，你要做的就是学会所有的公式并且
 应用自如。另外要记住，如果你需要5行以上来证明某件事，那么你的方法肯定错了。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;人们总是痴迷于自己不幸的根源 —— 这也是许多婚姻能稳固的根本原因。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;人们总是痴迷于自己不幸的根源 —— 这也是许多婚姻能稳固的根本原因。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;当时我正在试图改进数学论证：让论证更简单、更清晰。这需要把从编程中得到的经验运用到更广阔的数学
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;当时我正在试图改进数学论证：让论证更简单、更清晰。这需要把从编程中得到的经验运用到更广阔的数学
 领域中。&lt;/p&gt;
 &lt;p&gt;众所周知，要想把某件事做大，就必须对其进行分解 —— 类似于某些模块，我们必须能够独立开各个部分。
 编程的人都知道，这绝不只是劳动分工的问题，因为如果接口选择错误或者不恰当，工作量就会成10倍地
@@ -91,16 +91,16 @@
 考虑到这一点。一个优秀的数学理论一定具有实用性劳动分工的所有特征。缺乏经验的理论家的典型表现
 就是陶醉在自己提出的复杂论证中。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我永远秉承自己的看法和判断，毫不妥协。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我永远秉承自己的看法和判断，毫不妥协。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="michael-o-rabin"&gt;
+&lt;div class=&quot;section&quot; id=&quot;michael-o-rabin&quot;&gt;
 &lt;h2&gt;Michael O. Rabin&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;我们应当放弃寻找绝对正确的结果和答案。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我们应当放弃寻找绝对正确的结果和答案。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我认为，我们对于复杂任务还缺乏充分的理解。比如说，我们对人的记忆如何工作就缺乏充分的理解。如果
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我认为，我们对于复杂任务还缺乏充分的理解。比如说，我们对人的记忆如何工作就缺乏充分的理解。如果
 我和你谈起贝多芬，你马上就能知道我说的是一位作曲家。人们能够构建一种记忆组织方法，或者计算机
 程序，在一个有限的领域内对姓名分类。&lt;/p&gt;
 &lt;p&gt;但是，我们的记忆比这要复杂得多。你走在路上遇到一个糟蹋的人，于是突然想起上学时那位脏兮兮的同桌。&lt;/p&gt;
@@ -113,29 +113,29 @@
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="donald-e-knuth"&gt;
+&lt;div class=&quot;section&quot; id=&quot;donald-e-knuth&quot;&gt;
 &lt;h2&gt;Donald E. Knuth&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;计算机编程是一种艺术形式，就如同人们谱写诗歌和音乐。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;计算机编程是一种艺术形式，就如同人们谱写诗歌和音乐。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;数学是一种模式的科学。音乐也是模式。计算机科学在进行抽象、建立模式等方面同样有很多作为。我认为，
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;数学是一种模式的科学。音乐也是模式。计算机科学在进行抽象、建立模式等方面同样有很多作为。我认为，
 计算机科学与其他领域最大的区别就在于它不断的跃变 —— 从微观角度上升到宏观角度。&lt;/p&gt;
 &lt;p&gt;有许多职业的产生是有明确的需要，人们要找到解决重要问题的方法，比如医学方面的职业。而像计算机科学
 这样的职业之所以存在，是我们从小形成的思维结构所决定的。&lt;/p&gt;
 &lt;p&gt;如果你碰巧属于某 2%的人，那么你就会自然而然地被计算机所吸引而产生共鸣。正是思维方式将我们与其他
 人区分开来。最终，我意识到自己是一位计算机科学家。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我想，我分析算法的方式与业界绝大部分研究者不同。我的研究的独特之处在于能够指出某事比另一件事要
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我想，我分析算法的方式与业界绝大部分研究者不同。我的研究的独特之处在于能够指出某事比另一件事要
 好 10%到 15%。这是品味和性情的问题。我善于观察细节，这是从小接受的训练决定的；而有些人善于通观
 全局。&lt;/p&gt;
 &lt;p&gt;有些科学家就像探险家，喜欢走出去，在新领土上竖起旗帜；另一些则喜欢在已有的土地上灌溉和施肥，规范
 结构，立定法规。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我们常说需求是发明之母，这句话并不确切。一个人还得拥有该领域的背景知识。我并不是随走随看，研究
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我们常说需求是发明之母，这句话并不确切。一个人还得拥有该领域的背景知识。我并不是随走随看，研究
 自己看到的每一个问题。我解决的那些问题，都是因为我正好有独特的背景知识，也许会帮助我解决它。这是
 我的命运，我的责任。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;总的来说，不管你想研究的是什么，只要你能想象自己要对计算机来解释它，你就能发现这一主题中有哪些
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;总的来说，不管你想研究的是什么，只要你能想象自己要对计算机来解释它，你就能发现这一主题中有哪些
 你还不太了解的地方。这能帮助你提出正确的问题，也是对你所知的终极考验。&lt;/p&gt;
 &lt;p&gt;比如说，人们提出音乐理论是为了对什么好听、什么不好听作出客观而非主观的解答。我们知道莫扎特的音乐
 很好听，因为曲目和谐等。但当你要为计算机写出一个程序，让它创造真正优秀的音乐时，你就会知道已有的
@@ -143,14 +143,14 @@
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="robert-e-tarjan"&gt;
+&lt;div class=&quot;section&quot; id=&quot;robert-e-tarjan&quot;&gt;
 &lt;h2&gt;Robert E. Tarjan&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;我喜欢想象结构、线图和数据结构。这似乎比其他很多事情要来得轻松。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我喜欢想象结构、线图和数据结构。这似乎比其他很多事情要来得轻松。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;优秀的想法总是有办法进行简化，而且能解决原有目的之外的问题。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;优秀的想法总是有办法进行简化，而且能解决原有目的之外的问题。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;成功的关键在于问题的选择，而不是找出解决的方法。只要你能找到正确的方向，只要你能提出正确的问题，
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;成功的关键在于问题的选择，而不是找出解决的方法。只要你能找到正确的方向，只要你能提出正确的问题，
 你就已经开始迈向成功，问题的解决就在眼前。&lt;/p&gt;
 &lt;p&gt;要从实际应用中发现问题。人们很容易钻进理论的牛角尖，埋首于细枝末节，却失去了和真实世界间的联系。
 我研究的往往是那些有一定实际意义的问题，我感觉自己能够为它们找到更加实用的算法。&lt;/p&gt;
@@ -158,72 +158,72 @@
 联系。数学和理论计算机科学的魔力就在于此。你正想寻找某种普遍原理，突然就出现了某种神秘的联系。
 没有人知道这是为什么。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;人与人之间交往是非常重要的，而且它具有合作精神。身为教授，最大的乐趣之一就在于能带领一批研究生。
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;人与人之间交往是非常重要的，而且它具有合作精神。身为教授，最大的乐趣之一就在于能带领一批研究生。
 它能让你在研究中拥有巨大的优势，而且能调动极大的积极性，因为你身边的人都有着创新、开放的思维，
 而且求知若渴。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;成功需要什么？需要头脑，也需要坚忍不拔的精神。要解决一个问题，可能会有许多次失败的尝试，但最后
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;成功需要什么？需要头脑，也需要坚忍不拔的精神。要解决一个问题，可能会有许多次失败的尝试，但最后
 总有一次尝试让你看到奇迹的出现。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="leslie-lamport"&gt;
+&lt;div class=&quot;section&quot; id=&quot;leslie-lamport&quot;&gt;
 &lt;h2&gt;Leslie Lamport&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;我记得有一次午休时我坐在那里，有人进来以大人的口吻说：“看他那个开心样，把计算机当玩具了。”他说
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我记得有一次午休时我坐在那里，有人进来以大人的口吻说：“看他那个开心样，把计算机当玩具了。”他说
 的没错，这就是个绝妙的玩具。而这些大人根本没认识到它的绝妙之处。&lt;/p&gt;
 &lt;p&gt;我做研究从来都不是坐在那里干想：“X这个问题很重要，所以我应该解决X。”我想也没人会这样做。人们做
 研究是因为觉得某事很好玩，才会有兴趣去做。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我努力教学生们如何作数学证明，但没有成功。如今我意识到，失败的原因在于当时我有一种错觉，总以为
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我努力教学生们如何作数学证明，但没有成功。如今我意识到，失败的原因在于当时我有一种错觉，总以为
 应该有一套严密、精确的数学论证方法，但实际上数学证明只是一种书面形式，也并没有那么严密。现在我
 已经转变了看法。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;在对 SIFT 进行验证时我们发现了一个漏洞。这种漏洞只有形式化验证才能发现，其他任何方法都发现不了。
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;在对 SIFT 进行验证时我们发现了一个漏洞。这种漏洞只有形式化验证才能发现，其他任何方法都发现不了。
 这种漏洞每两年就会导致一架飞机由于偶发的宇宙射线而坠毁。&lt;/p&gt;
 &lt;p&gt;对那些性命攸关的计算机系统而言，验证绝对是必不可少的重要环节，但现状看来却并非如此。人们仅仅依赖
 于测试。测试当然不能忽略，但它决不能替代形式化的数学验证。&lt;/p&gt;
 &lt;p&gt;程序和算法都是抽象的数学实体。它们都可以应用数学方法。所以看在上帝的份上，让我们做吧。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;回顾自己的工作成果，大多数都是纯属好运。我只是在合适的时间遇到了合适的问题，而又恰好具有合适的
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;回顾自己的工作成果，大多数都是纯属好运。我只是在合适的时间遇到了合适的问题，而又恰好具有合适的
 知识背景而已。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="stephen-cook"&gt;
+&lt;div class=&quot;section&quot; id=&quot;stephen-cook&quot;&gt;
 &lt;h2&gt;Stephen Cook&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;某些问题无法依靠算法解决，这是不可改变的基本事实。而正是这一想法吸引了我。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;某些问题无法依靠算法解决，这是不可改变的基本事实。而正是这一想法吸引了我。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;这似乎是一个非常自然而又基本的问题。显然，有些问题在原则上可以通过算法解决，但实际中却不行，因为
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;这似乎是一个非常自然而又基本的问题。显然，有些问题在原则上可以通过算法解决，但实际中却不行，因为
 等到太阳系毁灭也不会算完。所以考察问题的固有难度是一个很自然的事情。&lt;/p&gt;
 &lt;p&gt;在计算机出现之前，人们只能靠手写来执行算法。这个过程极为漫长乏味，所以复杂性的问题很难引起人们的
 兴趣。现在有了强大的计算机来帮助我们，每秒执行数千次操作，自然而然就会探究到底有哪些类型的问题
 可以真正得到解决。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我们无法证明这些东西，这也是数学的这个领域里令人沮丧的地方。我们也无法证明 P 不等于 NP。因此可能
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我们无法证明这些东西，这也是数学的这个领域里令人沮丧的地方。我们也无法证明 P 不等于 NP。因此可能
 会有人发明某种聪明的并行算法，可以在多项式时间内解决某个 NP 完全问题。&lt;/p&gt;
 &lt;p&gt;在这种情况下，很难去定义进展。我们还没有接近成功，不过也有了部分的成绩。人们正在从多个不同的领域
 试图攻克这一难题。顺便说一句，P = NP 是可能的。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="leonid-levin"&gt;
+&lt;div class=&quot;section&quot; id=&quot;leonid-levin&quot;&gt;
 &lt;h2&gt;Leonid Levin&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;有时候，有些事情不能做也是件好事。有很多事情我都不希望别人对我做。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;有时候，有些事情不能做也是件好事。有很多事情我都不希望别人对我做。&lt;/p&gt;
 &lt;p&gt;这么多世纪以来，几乎所有著名的数学猜想都得到了解决，这一事实就是一个有力的证明，说明 NP 完全问题
 可以在多项式时间内解决，而不需要指数时间。数学家们往往认为历史证据表明 NP 需要指数时间，我认为
 他们完全搞反了方向。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="frederick-p-brooks"&gt;
+&lt;div class=&quot;section&quot; id=&quot;frederick-p-brooks&quot;&gt;
 &lt;h2&gt;Frederick P. Brooks&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;如果有人对你说：“你做的东西很不错，但它对我一点帮助都没有。”这其实是在提醒你要脚踏实地。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;如果有人对你说：“你做的东西很不错，但它对我一点帮助都没有。”这其实是在提醒你要脚踏实地。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我认为，在项目经理在外专设一个系统架构师是很重要的。在架构的实施过程中，有一个首席设计师以个人
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我认为，在项目经理在外专设一个系统架构师是很重要的。在架构的实施过程中，有一个首席设计师以个人
 智慧掌控整体设计也是同等重要的。这是让设计获得竞争力的唯一途径。&lt;/p&gt;
 &lt;p&gt;在《人月神话》中我曾说过要制造软件，然后适时扔掉。但我不会再做出这种言论。现在我会说，先构建一个
 最小限度的版本，将其投放到市场，开始收集反馈，然后再逐步增加功能。先制定规范，然后再构建和测试的
@@ -232,71 +232,71 @@
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="burton-j-smith"&gt;
+&lt;div class=&quot;section&quot; id=&quot;burton-j-smith&quot;&gt;
 &lt;h2&gt;Burton J. Smith&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;几乎任何事物的速度都是可变的。任何计算机都能以某种速度模仿其他任何事物。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;几乎任何事物的速度都是可变的。任何计算机都能以某种速度模仿其他任何事物。&lt;/p&gt;
 &lt;p&gt;在涉及如此多人的设计中，你无法通晓所有事情的状态。但你必须明确自己想要什么。最重要的一点可能是：
 用自己的想象力来考虑事情，然后让大家来共同完成。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="william-daniel-hillis"&gt;
+&lt;div class=&quot;section&quot; id=&quot;william-daniel-hillis&quot;&gt;
 &lt;h2&gt;William Daniel Hillis&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;连结机器的产生是因为我意识到了一下矛盾：人脑的运行比最快的计算机还要快，但其实人脑的转换需要好
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;连结机器的产生是因为我意识到了一下矛盾：人脑的运行比最快的计算机还要快，但其实人脑的转换需要好
 几微秒的时间，而计算机只需要几纳秒。&lt;/p&gt;
 &lt;p&gt;所以很明显，大脑的组织原理是并行的，而且是大规模并行。信息就在许多非常简单的并行单元的连接中间
 传递。如果我们按照这种组织系统来制造一台计算机，就很可能完成大脑所做的事情。连结机器的设计动机
 就这么简单。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;生物学家相信，简单的数学理论通常都是错误的，因为生物系统成因众多，彼此也没有清晰的界限，基本上
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;生物学家相信，简单的数学理论通常都是错误的，因为生物系统成因众多，彼此也没有清晰的界限，基本上
 可以说是杂乱无章。生物系统确实也有美存在，但这是一种复杂、丰富之美，而不是物理学那种简约、优雅
 之美。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;大脑并不是由运算放大器构成的。但如果能理解放大器电路中的反馈原理，对于理解某些生物系统的运作方式
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;大脑并不是由运算放大器构成的。但如果能理解放大器电路中的反馈原理，对于理解某些生物系统的运作方式
 会是很有帮助的。反馈已经成为生物学中内在化的东西，而且已经根植于我们对生物体运作的认识当中。我们
 并不认为反馈出自控制论。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;明斯基和费曼都教过我如何思考，而他们思考的方式大相径庭。但他们共有的一点是乐于质疑一切。在我们的
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;明斯基和费曼都教过我如何思考，而他们思考的方式大相径庭。但他们共有的一点是乐于质疑一切。在我们的
 现实生活中有许多看似毫无疑问的假设，而他们两人都善于把这些假设挖掘出来。而且明斯基和费曼都以自己
 的工作为乐。我想这一点很重要，而且我自己也是如此。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="edward-a-feigenbaum"&gt;
+&lt;div class=&quot;section&quot; id=&quot;edward-a-feigenbaum&quot;&gt;
 &lt;h2&gt;Edward A. Feigenbaum&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;医学很棒的一点在于，它是一个极好的演练沙盘，启发式无处不在。医学就是这样。这里面几乎没有生搬
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;医学很棒的一点在于，它是一个极好的演练沙盘，启发式无处不在。医学就是这样。这里面几乎没有生搬
 硬套，也从不像白纸黑字那样绝对。医学是一门艺术，需要经验和知识，也有规矩可循，能进行准确的猜测
 和良好的判断。所有这些综合在一起，再加上推理过程，当然还有真实的数据，医生会测量病患的各种体征，
 做各种化验，然后努力对检测结果进行判断。&lt;/p&gt;
 &lt;p&gt;人工智能方法就是在满是不成形的问题的领域中进行选择的方法。一般领域内的许多可计算问题，不管是物理
 计算还是工资计算，都是成形的问题，有对应的算法。解决这种问题我们不需要做任何究查。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;一门新技术不会自己走进现实生活。它只能依靠个人或组织对这种技术的拥护才能融入这个世界。技术不会
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;一门新技术不会自己走进现实生活。它只能依靠个人或组织对这种技术的拥护才能融入这个世界。技术不会
 推销自己。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;我们必须认清，人类是一个智能主体，而计算机则是另一个智能主体，二者的能力可以互为补充。我们必须
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;我们必须认清，人类是一个智能主体，而计算机则是另一个智能主体，二者的能力可以互为补充。我们必须
 设计出自己的系统，以便两者能够协同工作，从而获得更好的结果。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="douglas-lenat"&gt;
+&lt;div class=&quot;section&quot; id=&quot;douglas-lenat&quot;&gt;
 &lt;h2&gt;Douglas Lenat&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p class="first"&gt;有多少人一生中能有2%到10%的机会对这个世界产生重大的影响？如果真有这样的机会，你应该抓住它。&lt;/p&gt;
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;有多少人一生中能有2%到10%的机会对这个世界产生重大的影响？如果真有这样的机会，你应该抓住它。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;19世纪的物理学和直到当今的工程学都对人类的“身体”机能提供了“增强”。我们能到达的地方比步行的
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;19世纪的物理学和直到当今的工程学都对人类的“身体”机能提供了“增强”。我们能到达的地方比步行的
 距离更远，速度也更快。我们彼此间能交流的距离也完全超过了大声喊叫的范围。&lt;/p&gt;
 &lt;p&gt;人工智能的目标就是一种“智能增强”，这样我们就能更聪明，更具创造力，可以更快地解决更难的问题，
 同时减少遗忘，增强记忆。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;学习只在已知事物的边缘发生，所以人们只可能学到与自己已知相似的新东西。如果你试图学习的东西与你
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;学习只在已知事物的边缘发生，所以人们只可能学到与自己已知相似的新东西。如果你试图学习的东西与你
 已知的东西距离不远，那么你就能学会。这个边缘的范围越大（你已知的东西越多），就越有可能发现新的
 事物。&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;直到现在，人类的生命都是线性有限的。我们在一个地方存在一段时间，生命的结束就是死亡。而这一切可能
+&lt;li&gt;&lt;p class=&quot;first&quot;&gt;直到现在，人类的生命都是线性有限的。我们在一个地方存在一段时间，生命的结束就是死亡。而这一切可能
 会发生改变。想象一下每个人在网络空间中都有多个智能主体可以作为替身，可以去做我们喜欢的任何事情，
 而真实的意识则停留在一个肉体中。只要通信带宽足够大，在任何时候我们都可以将自己的精神迁徙到这些
 另外的主体中去。一个人死亡后，他或她的某些主体还会继续存在。福瑞德死了，但还有一些福瑞德在我们
@@ -304,7 +304,7 @@
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id1"&gt;
+&lt;div class=&quot;section&quot; id=&quot;id1&quot;&gt;
 &lt;h2&gt;结语&lt;/h2&gt;
 &lt;p&gt;最后，引用书中后记的几段话（注意，本书写于1998年），以做结语。&lt;/p&gt;
 &lt;p&gt;50年前，最优秀的工程师和物理学家所面临的难题仅仅是如何让硬件设备能够运转起来。&lt;/p&gt;
