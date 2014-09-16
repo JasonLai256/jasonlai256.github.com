@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>IPython 中的并行计算处理简介 - Thought Atlas</title>
+    <link rel="alternate" href="/feed.atom" title="Recent Blog Posts" type="application/atom+xml">
+    <link type="text/css" href="/static/css/bootstrap.css" rel="stylesheet">
+    <link type="text/css" href="/static/css/style.css" rel="stylesheet">
+    <link type="text/css" href="/static/css/pygments.css" rel="stylesheet">
+    
+
+</head>
+<body data-offset="50">
+  <header class="container">
+    <div class="title">
+      <a class="title" href="/">Thought Atlas</a>
+      <nav class="pull-right">
+	<ul class="primary nav nav-pills">
+	  <li><a href="/">blog</a>
+	  <li><a href="/archive/">archive</a>
+	  <li><a href="/tags/">tags</a>
+	  <li><a href="/about/">about</a>
+	</ul>
+      </nav>
+    </div>
+    <p>finding the right way of doing somethings.</p>
+  </header>
+
+  <div class="container">
+    <div id="content">
+<div class="article-unit" >
+  <h1 class="title">IPython 中的并行计算处理简介</h1>
+
+
+  
+  <p class="entry-date">written on 2014年9月16日星期二
+  
+
+  <p>首先， <a class="reference external" href="http://ipython.org">IPython</a> 确实是个非常好用的 Python <a class="reference external" href="http://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop">REPL</a> Shell，习惯一开机就会打开一个 terminal session
+并常开着 ipython ，以便随时进行 python 相关的实时交互。不过一直是保持够用就好的心理，有很多 magic
+function 都不太熟悉呢。还有就是 ipython <a class="reference external" href="http://ipython.org/notebook.html">notebook</a> 了，玩过几次，投奔 evernote 后就没有怎么
+碰过了，不过时不时看到别人用 notebook 做的分享，还是相当不错的啦。</p>
+<p>然后就是准备要讲东西，基于 ipython 支持的并行计算处理。虽然我的了解还很肤浅，不太可靠，但这个
+parallel 相关项目给我的感觉就是 amazing！可以看出利用 ipython 在 interactive python env 上
+面的积累，使得整体的并行计算处理都是可以交互式进行 ，极度的灵活，很牛很牛呢。不过实际上这个东西
+是适合于做科学计算（也许数据分享也适合吧），暂时没有想到现有的相关项目可以用上。无论如何，
+下面简单看下 ipython parallel computing 的相关实现咯。</p>
+<hr class="docutils" />
+<p>IPython 里的 I 表示的意思是 Interactive (交互)，对 REPL 是如此，对并行计算的支持也是如此。当
+初步了解相关使用后，就会发现这确实很 Cool！下面先看下 IPthon 并行计算相关架构图，</p>
+<div class="figure">
+      <img style="width: 300px;"
+           src="/static/img/material/ipython/architecture.png">
+      <p class="caption">
+           ipython parallel computing architecture
+      </p>
+</div><p>OK，首先要说明，因为我对于 ipython 的理解现在还是停留在表面 (往后可能会深入代码研究)，下面的
+叙述仅仅是个人的一些总结，绝不保证正确哦。 :-)</p>
+<p>图中最下面的 engine 就是整体架构中真正进行计算处理的实体，每一个 engine 都是独立的一个进程，也
+包含着一个独立的 python env。好吧，可以推断，这货跟 multiprocessing 的多进程模型类似，规避了
+GIL 的限制，每个进程都是由 python 的解析器接管处理，不过 ipython 自身的代码基包含许多对于
+python 运行环境的 hack，具体是如何就需要深入源码探索才知道咯。每部机器可以开启 N 个 engine
+（一般推荐是 cpu cores 对应个数），也可以多部机器组成一个集群，并行计算中实际进行的运算就在
+这些 engine 中。</p>
+<p>而图中间的 hub 和 schedulers 可以看做是中间人的角色，也就是 controller，提供途径让 client 能
+与 engines 交互，也管理着各 clients 和 engines 的运行和连接情况。特别的，因为一个集群（或多核
+机器）里可能有多个 engines 存在，controller 这边提供了两种方式让 client 去选择 engine 来处理
+事务，包括 Direct 方式，能让 client 直接选定任何一个确定的 engine 来进行处理，以及 LoadBalanced
+方式，通过 controller 来对各 engines 进行负载均衡判断并选择出进行处理的 engine 来。</p>
+<p>当然，图上方的 client 就是用户程序实际调用的东西咯，用于连接 ipython 的计算集群，发送具体指令去
+执行相关计算逻辑。</p>
+<hr class="docutils" />
+<p>一些简单的实例代码就不贴上来了，文档和相关教程里已经有很多了（ <a class="reference external" href="http://ipython.org/ipython-doc/dev/parallel/parallel_intro.html">这里</a> ）。</p>
+<p>就我而言，暂时觉得 ipython parallel computing 实现里的 engine 最有趣，因为每个 engine 都是
+一个完整的 python env，通过 client 去远程处理每个 engine 就是超爽！另外就是 controller 这一
+层，刚开始了解还以为就是一个 broker 的角色，稍稍深入点就发现其实 hub + schedulers 其实才是整体
+的核心，保证了并行计算交互的顺利进行。</p>
+<p>另外一点也是我比较喜欢的，整个 ipython parallel computing 架构的组件是通过 <a class="reference external" href="http://zeromq.org/">zmq</a> ( pyzmq ) 来
+进行通信交互。因为涉及到了集群间通信，首先是分布式集群管理的固有复杂度，然后还要处理好 client，
+hub，scheduler 和 engine 间的交互以及各类访问模式。从结果推论，使用 zmq 还是较出色的完成了
+任务。下面是相关图示，</p>
+<div class="figure">
+      <img src="/static/img/material/ipython/zmq_all_connections.png">
+      <p class="caption">
+           内部 zmq 连接图
+      </p>
+</div><p>其实挺想找个机会将 ipython 的强悍特性排上用场，不过想了一会也做罢了。现在时兴大数据分析是有原因的，
+基于数据来源越来越丰富的事实，我们需要一种快捷，通用以及可扩展的技术去处理好海量数据分析。难题包括
+数据存储以及如何分析，故现在基于 Hadoop 发展出来时兴技术是一堆又一堆呢！无论是 MapReduce 还是
+实时分析都是由实际问题出发而来。而 ipython 的并行计算只是解决了如何快速，方便和可扩展的进行 ...
+额，运算。应该确实是很适合科学计算相关的处理，但是对于一些实际的，简单的，枯燥的数据分析却是支持
+不大咯。当然，这只是我这井底蛙的肤浅想法啦。</p>
+<p>话不多写，大概就是这样子啦。以后有什么 ipython 的学习感想再谈谈相关吧。</p>
+
+
+  
+  <p class="entry-tags">This entry was tagged
+    
+      <a href="/tags/Python/">Python</a>, 
+      <a href="/tags/ipython/">ipython</a> and 
+      <a href="/tags/%E5%B9%B6%E8%A1%8C%E8%AE%A1%E7%AE%97/">并行计算</a>
+  </p>
+  
+</div>
+
+  
+    
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'thoughtatlas'; // required: replace example with your forum shortname
+    
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+  
+</div>
+  </div>
+
+  <footer data-offset=50>
+    <div class="container">
+      <p>© Copyright 2012 by Jason Lai. </p>
+    </div>
+  </footer>
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-38208289-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+</body>
+</html>

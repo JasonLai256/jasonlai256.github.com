@@ -318,3 +318,16 @@ h1 {
     background-color: #EEEEEE;
     text-decoration: none;
 }
+
+
+/*
+  插图和标题相关设置
+*/
+div.figure {
+    text-align: center;
+}
+p.caption {
+    font-style: italic;
+    font-size: 0.85em;
+    line-height: 27px;
+}
