@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title type="text">Recent Blog Posts</title>
+  <id>http://www.pywave.com/feed.atom</id>
+  <updated>2014-11-13T00:00:00Z</updated>
+  <link href="http://www.pywave.com/" />
+  <link href="http://www.pywave.com/feed.atom" rel="self" />
+  <subtitle type="text">Recent blog posts</subtitle>
+  <generator>Werkzeug</generator>
+  <entry xml:base="http://www.pywave.com/feed.atom">
+    <title type="text">2012</title>
+    <id>http://www.pywave.com/2013/01/04/conclude-2012</id>
+    <updated>2013-01-04T00:00:00Z</updated>
+    <link href="http://www.pywave.com/2013/01/04/conclude-2012" />
+    <author>
+      <name>Jason Lai</name>
+    </author>
+    <content type="html">&lt;p&gt;简直难以置信，这就一年过去啦？！光阴白驹过隙，在时间大神精确无情的操控下，2012年悄无声息且永不回头
+的离我们而去。世界没有毁灭，生活依然继续。在这年，我终于离开了校园，踏入社会开始独立生活。在格安
+工作的大半年时间里，感受到了很多不一样的东西，或疑惑，或开心，或激动。最庆幸的，虽然身边的许多东西
+都在不停变化，依然能保持着自己的态度，尽力做好每一件事。&lt;/p&gt;
+&lt;p&gt;生活时而忙碌，时而悠闲，基本上是有条不紊地过着，除了脚踏实地逐步向前迈进，偶尔也会抬头仰望下星空。
+在2013年，我希望能够继续保持良好的状态，学习并探究各种有趣的事情。工作上，期待可以做出一番让自己
+和他人满意的图景。生活上，希望自己能成为一个更好的男人，做好并承担各项重要的决定和事情。&lt;/p&gt;
+&lt;div class=&quot;section&quot; id=&quot;coding-practicing&quot;&gt;
+&lt;h2&gt;coding, practicing&lt;/h2&gt;
+&lt;p&gt;毕业后，最终选择留在格安工作，原因包括下面几个。&lt;/p&gt;
+&lt;p&gt;首先，公司给出的薪水还算符合自己的心理预期。当然，我没预料到，年终几个月的经济会如此的艰难，公司
+因为资金原因只能发着基本工资（最初几个月的正式工资还被自己很开心地到处乱花... o(╯□╰)o），导致
+近来都靠透支信用卡过着日子。不过我们都认为公司是有前景的，曙光也即将到来，故这些日子还是要咬咬牙
+挺过去哈。&lt;/p&gt;
+&lt;p&gt;其次，公司能给空间我去不断开拓和实践。我想，这应该是最为重要的原因，我享受那种环境，根据实际问题
+提出见解，讨论并改进，持续迭代实现。过程中，可以收获到不同的设计思路以及实现方法，当然，还能获得
+成就感与乐趣。纸上得来终觉浅，绝知此事要躬行。知识可以从书中以及很多途径获得，而经验只有花时间从
+实践中获得。我渴望自己能够不断进步。&lt;/p&gt;
+&lt;p&gt;最后，自己不是一个爱折腾的人，既然感觉 OK，那就不多想了。&lt;/p&gt;
+&lt;p&gt;在正式工作的半年里，遇到不少有挑战性的任务，在解决处理的过程中，获得了可贵的经验和成长。回首那些
+时间，能够切实的感悟到，过去在基础数据结构与算法中下的苦功夫，对编程风格良好品味的培养，都是值得的！
+这些过往积累的知识在解决实际问题的过程中获得了“释放”，并逐渐内化到我的思维中，让我变得更为实效。&lt;/p&gt;
+&lt;p&gt;整体来看，自己的工作轨迹还算是保持着积极以及热情，能够持续去学习、编码和实践。遗憾的是，自己在很多
+的事情上还是有显著的不足，不够成熟，不够担当，不够细致，很多事情都还有待改进。还有很长的一段路要
+走呢。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;section&quot; id=&quot;id2&quot;&gt;
+&lt;h2&gt;终于毕业了&lt;/h2&gt;
+&lt;p&gt;大学的日子一度让我感得无法忍受，自顾自地在计算机科学技术的世界畅游。过程中，发现了思考的乐趣，找寻到
+了自己人生的目标，但也使得自己的学业几度告急。从08年入学，时间终于来到了2012年6月份，我毕业了。回想
+毕业的那天，当时自己的心情没有什么特别，很平静地听从各种安排，很平静地领取了学位证书，很平静地打包好
+行装，和女友一起坐和谐号回到了广州住处，离开了那徘徊四年之久的东莞。也正式离开了校园。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;section&quot; id=&quot;id3&quot;&gt;
+&lt;h2&gt;实习的时间&lt;/h2&gt;
+&lt;p&gt;在实习刚开始的那段时间，自己还真的是没怎么找到感觉，连公司的业务（ &lt;a class=&quot;reference external&quot; href=&quot;http://en.wikipedia.org/wiki/Content_delivery_network&quot;&gt;CDN&lt;/a&gt; ，内容分发网络）都没搞清楚
+就开始进行相关的编程，些许不知所以然，唯有循规蹈矩地按照标哥的讲述以及自己的理解去实现任务。还好，
+这样的情况没有持续多久，不熟悉就花时间去学习，不确定就投入精力去实践。在实习的几个月里，也成功完成
+了数个任务，在这过程中，我的信心逐渐累积，相关的编程经验也在火速上涨。&lt;/p&gt;
+&lt;p&gt;学校的琐碎事情依然不断，导致那段时间我时常需要往返于广州和东莞。坐在客车上，望着窗外景色在眼前飞速
+流逝，总能让我感觉到时光也在不断流逝。生命总是从一个阶段瞬间跳跃到另一个阶段，我知道自己也即将要
+跨入人生的另一阶段了。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;section&quot; id=&quot;id4&quot;&gt;
+&lt;h2&gt;寻找实习&lt;/h2&gt;
+&lt;p&gt;从刚接触 Python 编程开始，就为其简洁优雅所吸引，彼时便希望未来找一份 Python 相关开发的工作。为此，
+从去年开始，除了保持对基础 CS 相关知识和编程素养的学习，我开始有意识地去接触学习一些实际生产环境中
+会使用的工具以及软件开发方法论，包括 Unix/Linux 编程环境（适应那些常用命令以及伟大的 emacs），版本
+控制系统（svn 和 git），极限编程（对结对编程和 TDD 较感兴趣），敏捷开发（让我明白正式开发也不是什么
+沉重的事情），以及开始去了解和接触开源的世界。&lt;/p&gt;
+&lt;p&gt;那时候，也清楚 Python 在国内更多的是 Web 方面的开发，故还特意花了不少时间去学习 Django 方面的开发。
+现在想来，对于 Django 的学习之旅也很有价值，让我了解了许多网络以及 web 开发相关的第一手知识。&lt;/p&gt;
+&lt;p&gt;我在开学前就来到了学校，花了十几天处理好学校的一些事情，然后就开始找实习啦。在搜索引擎、社区群组和
+招聘网站上都找了找，结果总共发现了屈指可数的几个广东 Python 相关的实习。这倒是在我的意料之中。给这
+几个家都发了简历，结果不知是我资历过浅，还是简历做的不好，没有几家公司有响应。其中一家在广州的公司
+来电约了个时间面试，刚好那时候需要到广州补拍毕业的证件照（自己导致的折腾事），于是约好了面试的时间
+，打算那天拍了照后顺便去天河五山面试。&lt;/p&gt;
+&lt;p&gt;好吧，事情就发展到这里。我通过了面试，进入了这家名为格安科技，提供 &lt;a class=&quot;reference external&quot; href=&quot;http://en.wikipedia.org/wiki/Content_delivery_network&quot;&gt;CDN&lt;/a&gt; 基础服务的初创公司，人不
+多，地方也不大，但当时给我的感觉还不错，于是乐观的认为在这里应该能学到东西。再然后，准确的说，应该
+是两天之后，我就来上班啦。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class=&quot;section&quot; id=&quot;id5&quot;&gt;
+&lt;h2&gt;最后的寒假&lt;/h2&gt;
+&lt;p&gt;随着2011年的过去，大四伊始那“精彩绚丽”的学期也终于结束了，生活总是出人意外，不过最后依然是回归
+平静。于是，学生时代的最后一个寒假也准时到来了。没什么特别，还是如往年那样回家度过，唯一不同的是
+，这次有女朋友陪着我一起去车站，买车票。 :-)&lt;/p&gt;
+&lt;p&gt;寒假在家，除了照例帮家里的忙，其余的大部分时间依然是放在了技术学习和编码上。心中明白，短暂的假期
+很快就会结束，返校后将会有很多的事情需要去做。&lt;/p&gt;
+&lt;p&gt;在假期寂静的寒夜里，我对过往所做所学所感受的东西进行了多番思索，思考了很多。最后也没得出什么具体的
+结论。但我确定自己的选择没错，我喜爱程序设计这项高水平的智力游戏，投入其中让我感受到无与伦比的乐趣。
+我的选择，我能做好。&lt;/p&gt;
+&lt;/div&gt;
+</content>
+  </entry>
+  <entry xml:base="http://www.pywave.com/feed.atom">
+    <title type="text">Happy Hacking</title>
+    <id>http://www.pywave.com/2014/11/13/happy-hacking</id>
+    <updated>2014-11-13T00:00:00Z</updated>
+    <link href="http://www.pywave.com/2014/11/13/happy-hacking" />
+    <author>
+      <name>Jason Lai</name>
+    </author>
+    <content type="html">&lt;p&gt;今年上半年的时间是我人生最难忘的时光之一，可以说无论身体和心理都是持续处于高压的状态，总有处理不完的问题出现，
+技术跟不上的压力，服务器 IO 的压力，业务增长的压力，公司财务的压力，感情生活的压力。也曾出现几度泪崩的情况。
+现在回头再看，确实是，如人饮水，冷暖自知。&lt;/p&gt;
+&lt;p&gt;一方面来说是非常的幸运，在这些问题解决的过程里，自己都能得到身边牛人的指导前进。获益匪浅，帮助我得到了一些
+技术层面上质的长进。&lt;/p&gt;
+&lt;p&gt;另一方面，过程中除了肚子延续了变大的趋势外，整体的身体素质也有了很大的滑坡。手指关节疼痛痛，肩痛和腰痛成为了
+伴随身边的梦魇，在后期基本每到晚上时候肩和腰都会隐隐作痛，非常折磨人。&lt;/p&gt;
+&lt;p&gt;大概是 8 月份的时候，因为意识到这么下去必然会是恶性循环，我开始着手计划一些改变。&lt;/p&gt;
+&lt;hr class=&quot;docutils&quot; /&gt;
+&lt;p&gt;我一直想去跑步，公司旁边的华师就有运动场可以供人运动，但我觉得很多东西不太方便就一直没有去。复盘回想，其实懒
+应该是最大原因，呵呵。&lt;/p&gt;
+&lt;p&gt;于是我认为健身房里面的跑步机是个不错的选择，但是没有去健身房经验的我，对这个事情也不太确定，故也拖了一阵时间。
+直到 8 月中旬时候，我联系了附近的一家力美健的销售人员谈了下。年卡接近 4 千多的价格吓到了我，因为我这个时候的
+金钱压力也是非常的大。最后是 8 月底试玩了一次，感觉不错，加上年卡能降到 3 千多点，就咬牙刷了信用卡。&lt;/p&gt;
+&lt;p&gt;事实证明，运动确实是生命之源，现在我的肩痛和腰痛已经是不药而愈了。心情不再那么烦躁，技术上的东西也愈发得心
+应手。&lt;/p&gt;
+&lt;hr class=&quot;docutils&quot; /&gt;
+&lt;p&gt;手指关节的疼痛来源于 macbook air 那“瘦小”的键盘，很早就察觉到这个问题，只是觉得笔记本的优势就是便携性，加多个
+外置键盘会破坏整体的感受。于是在优化了键位（将 tab 和左 control 互换）后也就随之自然了。&lt;/p&gt;
+&lt;p&gt;不良后果逐渐显现，后来每当打字加快速度，左右手的中指或无名指的关节处会产生持续的疼痛，整体编程的感觉受到极大
+的影响。去年的时候尝试过买指套来戴，一开始觉得有点效果，但是毕竟治标不治本，加上指套很紧久了也会带来不舒适的
+感觉，很快也就没有继续使用。&lt;/p&gt;
+&lt;p&gt;在 9 月的时候，经济有所改善，思前想后，我“狠心”买下了 HHKB Pro2 这款静电容键盘。&lt;/p&gt;
+&lt;p&gt;不知不觉，使用 &lt;a class=&quot;reference external&quot; href=&quot;http://en.wikipedia.org/wiki/Happy_Hacking_Keyboard&quot;&gt;HHKB&lt;/a&gt; 已经快两个月啦，出色的手感让我对这个其貌不扬的键盘越发喜爱，适配 mac 的键位分布也是非常
+让人的顺心。我的手指疼痛问题就这么好了。另外，精简的键位布局让键盘轻便了起来，每天带着上下班也没什么压力。&lt;/p&gt;
+&lt;div class=&quot;figure&quot;&gt;
+      &lt;img style=&quot;height: 284px;  width: 439px;&quot; src=&quot;/static/img/material/device/F5717EA2-HHKB.png&quot;&gt;
+      &lt;p class=&quot;caption&quot;&gt;
+           黑色版 HHKB Pro2
+      &lt;/p&gt;
+&lt;/div&gt;&lt;p&gt;使用了外置键盘后，很自然的，我又想扩展屏幕了。公司有空闲的显示器可用，在京东试了几款笔记本托架，最后确认实施
+方案（下图），整体效果也是非常的喜人，很舒适。&lt;/p&gt;
+&lt;div class=&quot;figure&quot;&gt;
+      &lt;img style=&quot;height: 290px;  width: 433px;&quot; src=&quot;/static/img/material/environ/E411C63C-working-desk.png&quot;&gt;
+      &lt;p class=&quot;caption&quot;&gt;
+           现在的工作桌面
+      &lt;/p&gt;
+&lt;/div&gt;&lt;p&gt;工作环境改善的案例，让我也准备把家里的环境搭好。故在刚刚双 11 里，采购了相关的配件，让家里的编程环境也进行个
+大改善。呵呵，想想还是有点小激动呐！&lt;/p&gt;
+&lt;hr class=&quot;docutils&quot; /&gt;
+&lt;p&gt;舒适的环境让我更加舒心的进行编程。&lt;/p&gt;
+&lt;p&gt;Happy Hacking!&lt;/p&gt;
+</content>
+  </entry>
+</feed>
+

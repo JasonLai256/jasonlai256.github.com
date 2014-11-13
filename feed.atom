@@ -2,11 +2,63 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title type="text">Recent Blog Posts</title>
   <id>http://www.pywave.com/feed.atom</id>
-  <updated>2014-09-16T00:00:00Z</updated>
+  <updated>2014-11-13T00:00:00Z</updated>
   <link href="http://www.pywave.com/" />
   <link href="http://www.pywave.com/feed.atom" rel="self" />
   <subtitle type="text">Recent blog posts</subtitle>
   <generator>Werkzeug</generator>
+  <entry xml:base="http://www.pywave.com/feed.atom">
+    <title type="text">Happy Hacking</title>
+    <id>http://www.pywave.com/2014/11/13/happy-hacking</id>
+    <updated>2014-11-13T00:00:00Z</updated>
+    <link href="http://www.pywave.com/2014/11/13/happy-hacking" />
+    <author>
+      <name>Jason Lai</name>
+    </author>
+    <content type="html">&lt;p&gt;今年上半年的时间是我人生最难忘的时光之一，可以说无论身体和心理都是持续处于高压的状态，总有处理不完的问题出现，
+技术跟不上的压力，服务器 IO 的压力，业务增长的压力，公司财务的压力，感情生活的压力。也曾出现几度泪崩的情况。
+现在回头再看，确实是，如人饮水，冷暖自知。&lt;/p&gt;
+&lt;p&gt;一方面来说是非常的幸运，在这些问题解决的过程里，自己都能得到身边牛人的指导前进。获益匪浅，帮助我得到了一些
+技术层面上质的长进。&lt;/p&gt;
+&lt;p&gt;另一方面，过程中除了肚子延续了变大的趋势外，整体的身体素质也有了很大的滑坡。手指关节疼痛痛，肩痛和腰痛成为了
+伴随身边的梦魇，在后期基本每到晚上时候肩和腰都会隐隐作痛，非常折磨人。&lt;/p&gt;
+&lt;p&gt;大概是 8 月份的时候，因为意识到这么下去必然会是恶性循环，我开始着手计划一些改变。&lt;/p&gt;
+&lt;hr class=&quot;docutils&quot; /&gt;
+&lt;p&gt;我一直想去跑步，公司旁边的华师就有运动场可以供人运动，但我觉得很多东西不太方便就一直没有去。复盘回想，其实懒
+应该是最大原因，呵呵。&lt;/p&gt;
+&lt;p&gt;于是我认为健身房里面的跑步机是个不错的选择，但是没有去健身房经验的我，对这个事情也不太确定，故也拖了一阵时间。
+直到 8 月中旬时候，我联系了附近的一家力美健的销售人员谈了下。年卡接近 4 千多的价格吓到了我，因为我这个时候的
+金钱压力也是非常的大。最后是 8 月底试玩了一次，感觉不错，加上年卡能降到 3 千多点，就咬牙刷了信用卡。&lt;/p&gt;
+&lt;p&gt;事实证明，运动确实是生命之源，现在我的肩痛和腰痛已经是不药而愈了。心情不再那么烦躁，技术上的东西也愈发得心
+应手。&lt;/p&gt;
+&lt;hr class=&quot;docutils&quot; /&gt;
+&lt;p&gt;手指关节的疼痛来源于 macbook air 那“瘦小”的键盘，很早就察觉到这个问题，只是觉得笔记本的优势就是便携性，加多个
+外置键盘会破坏整体的感受。于是在优化了键位（将 tab 和左 control 互换）后也就随之自然了。&lt;/p&gt;
+&lt;p&gt;不良后果逐渐显现，后来每当打字加快速度，左右手的中指或无名指的关节处会产生持续的疼痛，整体编程的感觉受到极大
+的影响。去年的时候尝试过买指套来戴，一开始觉得有点效果，但是毕竟治标不治本，加上指套很紧久了也会带来不舒适的
+感觉，很快也就没有继续使用。&lt;/p&gt;
+&lt;p&gt;在 9 月的时候，经济有所改善，思前想后，我“狠心”买下了 HHKB Pro2 这款静电容键盘。&lt;/p&gt;
+&lt;p&gt;不知不觉，使用 &lt;a class=&quot;reference external&quot; href=&quot;http://en.wikipedia.org/wiki/Happy_Hacking_Keyboard&quot;&gt;HHKB&lt;/a&gt; 已经快两个月啦，出色的手感让我对这个其貌不扬的键盘越发喜爱，适配 mac 的键位分布也是非常
+让人的顺心。我的手指疼痛问题就这么好了。另外，精简的键位布局让键盘轻便了起来，每天带着上下班也没什么压力。&lt;/p&gt;
+&lt;div class=&quot;figure&quot;&gt;
+      &lt;img style=&quot;height: 284px;  width: 439px;&quot; src=&quot;/static/img/material/device/F5717EA2-HHKB.png&quot;&gt;
+      &lt;p class=&quot;caption&quot;&gt;
+           黑色版 HHKB Pro2
+      &lt;/p&gt;
+&lt;/div&gt;&lt;p&gt;使用了外置键盘后，很自然的，我又想扩展屏幕了。公司有空闲的显示器可用，在京东试了几款笔记本托架，最后确认实施
+方案（下图），整体效果也是非常的喜人，很舒适。&lt;/p&gt;
+&lt;div class=&quot;figure&quot;&gt;
+      &lt;img style=&quot;height: 290px;  width: 433px;&quot; src=&quot;/static/img/material/environ/E411C63C-working-desk.png&quot;&gt;
+      &lt;p class=&quot;caption&quot;&gt;
+           现在的工作桌面
+      &lt;/p&gt;
+&lt;/div&gt;&lt;p&gt;工作环境改善的案例，让我也准备把家里的环境搭好。故在刚刚双 11 里，采购了相关的配件，让家里的编程环境也进行个
+大改善。呵呵，想想还是有点小激动呐！&lt;/p&gt;
+&lt;hr class=&quot;docutils&quot; /&gt;
+&lt;p&gt;舒适的环境让我更加舒心的进行编程。&lt;/p&gt;
+&lt;p&gt;Happy Hacking!&lt;/p&gt;
+</content>
+  </entry>
   <entry xml:base="http://www.pywave.com/feed.atom">
     <title type="text">IPython 中的并行计算处理简介</title>
     <id>http://www.pywave.com/2014/09/16/parallel-programming-in-ipython</id>
@@ -1204,71 +1256,6 @@ Gevent 进行编程，无论是可读性还是可操作性都能让人满意。�
 &lt;p&gt;作为一名 Python 程序员，在探究和使用 Tornado 与 Gevent 的过程里，除了得到许多思考的乐趣外，最
 让人高兴的是收获了一些全新的视野。使用 Python 编程的好处之一便是，可以很容易地跳出语言的框框去看
 各式问题，从而提高自己对于程序设计的总体认识。人生苦短，我用Python！  :-)&lt;/p&gt;
-&lt;/div&gt;
-</content>
-  </entry>
-  <entry xml:base="http://www.pywave.com/feed.atom">
-    <title type="text">Hello Modularity</title>
-    <id>http://www.pywave.com/2012/07/23/hello-modularity</id>
-    <updated>2012-07-23T00:00:00Z</updated>
-    <link href="http://www.pywave.com/2012/07/23/hello-modularity" />
-    <author>
-      <name>Jason Lai</name>
-    </author>
-    <content type="html">&lt;p&gt;现代的程序设计是越来越复杂，为了掌控其中不断增长的复杂度，以及可能随时到来的需求变化，模块化设
-计是最重要的手段之一。学习编程以来，对模块化的理解随着知识经验的增加而不断变化。到现在，恍然意
-识到，人类社会的每一个重大进步和发展无不是 &lt;strong&gt;站在巨人的肩膀上&lt;/strong&gt; ，雄伟的金字塔由众多规格统一的石
-头砌成，现代的集成电路基于基本的逻辑门和触发器，大规模的程序实现离不开结构化程序设计以及各式
-功能模块支持。大道至简，模块化的思想并不局限于程序设计，是如此简单，也是如此繁复。&lt;/p&gt;
-&lt;p&gt;每当程序复杂度增长到一定程度时，总能感悟到模块化编程的重要性，在 The Art of Unix Programming
-中对于模块化有着直接了当的说明：&lt;/p&gt;
-&lt;p&gt;The only way to write complex software that won't fall on its face is to build
-it out of simple modules connected by well-defined interfacs, so that most
-problems are local and you can have some hope of fixing or optimizing a part
-without breaking the whole.&lt;/p&gt;
-&lt;p&gt;还记得初始编程那会，在古董级的 Turbo C 3.0 上照着书操弄着初始的 C语言，什么都不懂，是如此的质朴。
-但人是会进步的，在数次痛苦经历的洗礼，以及多本经典的好书 &lt;a class=&quot;footnote-reference&quot; href=&quot;#id3&quot; id=&quot;id1&quot;&gt;[1]&lt;/a&gt; 的指导下，逐渐意识到，要想在跟复杂
-度和需求变化的战斗中不至于一败涂地，必须尽量保持模块间的正交性，紧密耦合的模块将导致修改局部而牵
-动全局的后果；还要做好模块的信息隐藏，包括对于复杂和易变部分的封装，以及定义良好的模块接口；应使用
-薄胶合层来组织程序中的不同模块和层次，厚重的胶合层必然会带来额外的逻辑处理以及复杂度；不能忘了，
-要让事情尽可能的简单，但不能过于简单。&lt;/p&gt;
-&lt;p&gt;程序设计是一种高挑战性的游戏，接触不久就牢牢捕获了我的心，这些年来，除了收获到许多难以言喻的快乐外，
-我的人生观和价值观都得到了深刻的改变。自由的信息获取观念，理性的对待问题，追寻简单的艺术和美，这就
-是我现在的所有。模块化不仅是编程的概念，生活中依然适用。&lt;/p&gt;
-&lt;p&gt;围绕着模块化，立即就联想到了 KISS 原则和 DRY 原则，两者都是在心中周而复始的小声音，就像是旅途中的指南
-针，指引着自己不断前行。&lt;/p&gt;
-&lt;div class=&quot;section&quot; id=&quot;kiss&quot;&gt;
-&lt;h2&gt;&lt;a class=&quot;reference external&quot; href=&quot;http://en.wikipedia.org/wiki/KISS_principle&quot;&gt;KISS原则&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;对于 UNIX 哲学，一言以蔽之，Keep It Simple, Stupid!&lt;/p&gt;
-&lt;p&gt;简单可行的设计永远都是好的设计，复杂的设计意味着更难以应对变化。&lt;/p&gt;
-&lt;p&gt;小时候，自己总是认为，唯有对事情有了完全的掌握后才能将事情完美的做好。同时，有那么一种倾向，必须作
-出最好的决策，以最专注的态度去实现，然后就能得出最好的结果。&lt;/p&gt;
-&lt;p&gt;上面的想法看起来很美好。但是现实告诉我们，这是最没有实效的方法之一。我们必须明白，在这世界上，任何
-有意义的事情，都不存在一蹴而就和一劳永逸。事物总是处于变化与稳定的临界状态中，彼此维持于一种微妙的
-动态平衡，经外来或内部因素的稍一“搅拌”，各种未知状态便会涌向，趋向于混沌。简而言之，事情总是会变化
-的，不论你想还是不想，有所准备还是匆忙应付。&lt;/p&gt;
-&lt;p&gt;为了应对变化，我们必须更为灵活。在我看来，这就是 KISS 原则最重要的含义。&lt;/p&gt;
-&lt;p&gt;而模块化的设计，正是 KISS 原则的最佳体现和实践。&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class=&quot;section&quot; id=&quot;dry&quot;&gt;
-&lt;h2&gt;&lt;a class=&quot;reference external&quot; href=&quot;http://en.wikipedia.org/wiki/Don%27t_repeat_yourself&quot;&gt;DRY原则&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;重复是有害的。&lt;/p&gt;
-&lt;p&gt;最简单地来看，重复消耗更多的时间，而时间实质上就是一切。&lt;/p&gt;
-&lt;p&gt;在良好的模块化设计里，DRY 原则必然是被遵守的准则之一。&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class=&quot;section&quot; id=&quot;id2&quot;&gt;
-&lt;h2&gt;写在最后&lt;/h2&gt;
-&lt;p&gt;模块化设计在现代的结构化编程里是如此的普遍，每个人对于模块化都有不同的认识。我不认为自己对于模块化
-有多么深刻的了解，但在喜爱上编程的这些时间里，确实对模块化有了点点滴滴的感悟，于是写下了自己对于
-模块化的一些认知。这是此 Blog 里的第一篇文章，基于程序员世界 &amp;quot;Hello World&amp;quot; 的习惯，故将此文
-命名为 &amp;quot;Hello Modulatity&amp;quot;。&lt;/p&gt;
-&lt;hr class=&quot;docutils&quot; /&gt;
-&lt;table class=&quot;docutils footnote&quot; frame=&quot;void&quot; id=&quot;id3&quot; rules=&quot;none&quot;&gt;
-&lt;colgroup&gt;&lt;col class=&quot;label&quot; /&gt;&lt;col /&gt;&lt;/colgroup&gt;
-&lt;tbody valign=&quot;top&quot;&gt;
-&lt;tr&gt;&lt;td class=&quot;label&quot;&gt;&lt;a class=&quot;fn-backref&quot; href=&quot;#id1&quot;&gt;[1]&lt;/a&gt;&lt;/td&gt;&lt;td&gt;毫不犹豫地推荐《代码大全》、《程序员修炼之道》、《UNIX编程艺术》和《重构》等极品好书。&lt;/td&gt;&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
 &lt;/div&gt;
 </content>
   </entry>
