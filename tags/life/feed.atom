@@ -115,7 +115,7 @@
 应手。&lt;/p&gt;
 &lt;hr class=&quot;docutils&quot; /&gt;
 &lt;p&gt;手指关节的疼痛来源于 macbook air 那“瘦小”的键盘，很早就察觉到这个问题，只是觉得笔记本的优势就是便携性，加多个
-外置键盘会破坏整体的感受。于是在优化了键位（将 tab 和左 control 互换）后也就随之自然了。&lt;/p&gt;
+外置键盘会破坏整体的感受。于是在优化了键位（将 caps lock 和左 control 互换）后也就随之自然了。&lt;/p&gt;
 &lt;p&gt;不良后果逐渐显现，后来每当打字加快速度，左右手的中指或无名指的关节处会产生持续的疼痛，整体编程的感觉受到极大
 的影响。去年的时候尝试过买指套来戴，一开始觉得有点效果，但是毕竟治标不治本，加上指套很紧久了也会带来不舒适的
 感觉，很快也就没有继续使用。&lt;/p&gt;
@@ -139,6 +139,18 @@
 &lt;hr class=&quot;docutils&quot; /&gt;
 &lt;p&gt;舒适的环境让我更加舒心的进行编程。&lt;/p&gt;
 &lt;p&gt;Happy Hacking!&lt;/p&gt;
+&lt;dl class=&quot;docutils&quot;&gt;
+&lt;dt&gt;. role:: strike&lt;/dt&gt;
+&lt;dd&gt;&lt;table class=&quot;first last docutils field-list&quot; frame=&quot;void&quot; rules=&quot;none&quot;&gt;
+&lt;col class=&quot;field-name&quot; /&gt;
+&lt;col class=&quot;field-body&quot; /&gt;
+&lt;tbody valign=&quot;top&quot;&gt;
+&lt;tr class=&quot;field&quot;&gt;&lt;th class=&quot;field-name&quot;&gt;class:&lt;/th&gt;&lt;td class=&quot;field-body&quot;&gt;strike&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/dd&gt;
+&lt;/dl&gt;
 </content>
   </entry>
 </feed>
