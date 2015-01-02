@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>关于 Carbon 我所了解的几个事儿 - Thought Atlas</title>
+    <link rel="alternate" href="/feed.atom" title="Recent Blog Posts" type="application/atom+xml">
+    <link type="text/css" href="/static/css/bootstrap.css" rel="stylesheet">
+    <link type="text/css" href="/static/css/style.css" rel="stylesheet">
+    <link type="text/css" href="/static/css/pygments.css" rel="stylesheet">
+    
+
+</head>
+<body data-offset="50">
+  <header class="container">
+    <div class="title">
+      <a class="title" href="/">Thought Atlas</a>
+      <nav class="pull-right">
+	<ul class="primary nav nav-pills">
+	  <li><a href="/">blog</a>
+	  <li><a href="/archive/">archive</a>
+	  <li><a href="/tags/">tags</a>
+	  <li><a href="/about/">about</a>
+	</ul>
+      </nav>
+    </div>
+    <p>finding the right way of doing somethings.</p>
+  </header>
+
+  <div class="container">
+    <div id="content">
+<div class="article-unit" >
+  <h1 class="title">关于 Carbon 我所了解的几个事儿</h1>
+
+
+  
+  <p class="entry-date">written on 2015年1月2日星期五
+  
+
+  <p>现在工作中相当多的一些事情都是基于 python 来处理，原因也简单，就是有更好的可控性。在自动化运维的
+重要一环 -- 监控 -- 我们使用 <a class="reference external" href="http://graphite.readthedocs.org/en/latest/">Graphite</a> 来作为监控数据汇总和展示的解决方案。Graphite 包含三大部件，
+<a class="reference external" href="https://github.com/graphite-project/graphite-web">graphite-web</a> 提供 界面 和 api 来展示监控的数据（图片和原始数据）， <a class="reference external" href="https://github.com/graphite-project/carbon">carbon</a> 提供接口来接收监控数据
+（自定义协议）， <a class="reference external" href="https://github.com/graphite-project/whisper">whisper</a> 是类 rrd 的数据库用于保存监控数据（numeric time-series data）。</p>
+<p>很多开源的 python 项目都会将整体的项目拆分开发，这是我挺喜欢的一点。Graphite 的三个项目各司其职，
+组成了一个完整的监控数据存储和展示平台。值得注意的是，收集监控数据的不是 Graphite 的职责，不过因为
+carbon 的数据接收协议非常简单，有许多成熟的监控收集程序都集成了发送 graphite metric 的功能或插件。
+现在我们内部在用是基于 python 的一个开源项目，叫做 <a class="reference external" href="https://github.com/BrightcoveOS/Diamond">Diamond</a> ，我们可以很方便的对这东西进行二次开发
+，以收集一些专门的监控数据。</p>
+<p>OK，终于可以谈谈今天的主角 carbon 了。老实讲，这家伙并不太得我的欢心，整体的代码实现挺糙的，基于
+Twisted 实现也让我大呼头疼了一阵（主要是我懒...）。使用的过程中，掉过几次坑，都是伤感的故事，迫不
+得已唯有逼自己考察源码。最后发现，实现糙归糙，但是整体的思路和逻辑还是有很多值得参考的东西。这篇东西
+主要是记录下关于 Carbon 我所了解的几个事儿。</p>
+<hr class="docutils" />
+<p>故事要从“掉坑”说起。话说在最开始接触 Graphite 项目的时候（想想已经是两年前的事情了...），首先考察
+了 graphite-web 的代码，过程中赫然发现，graphite-web 提取具体 metric 数据的时候，除了会读一下磁盘
+的 whisper 数据文件外，还会额外调用函数去请求 carbon-link 的数据，再整合两组数据来生成最终数据。这不，
+一个强烈印象在我脑海形成 -- Graphite 真是个好东西，carbon 是会将 metric 缓存在内存中，在必要时候
+才会写会到磁盘，这比 rrdtools 那只会不断写磁盘的策略好多了！</p>
+<p>实际上，carbon 确实是会将接收的 time-series 数据缓存在内存中，但是因为没有搞清楚一个事实，导致后期
+监控数据量上去，实际运行时候 carbon 接收数据时候时不时出现状况。这里先来看看 carbon 的配置里的
+MAX_CACHE_SIZE 和 CACHE_WRITE_STRATEGY 两个参数:</p>
+<pre class="literal-block">
+# Limit the size of the cache to avoid swapping or becoming CPU bound.
+# Sorts and serving cache queries gets more expensive as the cache grows.
+# Use the value &quot;inf&quot; (infinity) for an unlimited cache size.
+MAX_CACHE_SIZE = inf
+
+# The thread that writes metrics to disk can use on of the following strategies
+# determining the order in which metrics are removed from cache and flushed to
+# disk. The default option preserves the same behavior as has been historically
+# available in version 0.9.10.
+#
+# sorted - All metrics in the cache will be counted and an ordered list of
+# them will be sorted according to the number of datapoints in the cache at the
+# moment of the list's creation. Metrics will then be flushed from the cache to
+# disk in that order.
+#
+# max - The writer thread will always pop and flush the metric from cache
+# that has the most datapoints. This will give a strong flush preference to
+# frequently updated metrics and will also reduce random file-io. Infrequently
+# updated metrics may only ever be persisted to disk at daemon shutdown if
+# there are a large number of metrics which receive very frequent updates OR if
+# disk i/o is very slow.
+#
+# naive - Metrics will be flushed from the cache to disk in an unordered
+# fashion. This strategy may be desirable in situations where the storage for
+# whisper files is solid state, CPU resources are very limited or deference to
+# the OS's i/o scheduler is expected to compensate for the random write
+# pattern.
+#
+CACHE_WRITE_STRATEGY = sorted
+</pre>
+<p>直观的理解起来，MAX_CACHE_SIZE 就是制定 carbon 缓存在内存里面的数据量。而 CACHE_WRITE_STRATEGY 一看
+就感觉超强大，还能指定不同的写入策略，非常不错呐，既然推荐用 sorted 策略那就不变咯。</p>
+<p>实际运行的情况是，carbon 进程不时出现 cpu 占用 100% 的情况，数据都接收不了，怎么调配置都没有用，一阵
+的外部观察调试都没有什么发现什么特殊情况。我一直认为 MAX_CACHE_SIZE 是指数据所占内存大小，继续钻牛角
+尖，将该数值从 2GB（即 2147483648）调大到了 5GB 的大小（即 5368709120），结果也是毫无用处。</p>
+<p>后来，我们使用了 SSD 来存储监控数据，这么一来肯定没有磁盘 IO 压力嘛，那就也将 CACHE_WRITE_STRATEGY
+改为 naive 的策略。结果还是毫无用处。</p>
+<p>我是这个伤心啊，但是问题总归是要解的。虽然对于 twisted 我是略感无力，唯有还是深入到 carbon 源码去
+看看到底是咋个回事了。结果才发现了上面两个参数的坑爹，下面是代码实现里对于 MAX_CACHE_SIZE 的使用。</p>
+<div class="highlight"><pre><span class="c"># In cache.py - class MetricCache</span>
+<span class="k">def</span> <span class="nf">store</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">datapoint</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datapoint</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isFull</span><span class="p">():</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="s">&quot;MetricCache is full: self.size=</span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">cacheFull</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">isFull</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;=</span> <span class="n">settings</span><span class="o">.</span><span class="n">MAX_CACHE_SIZE</span>
+</pre></div>
+<p>原来我一直都是理解错了，MAX_CACHE_SIZE 其实是缓存数据项（metric）的数量，而不是存储量。而更加坑爹的
+是 CACHE_WRITE_STRATEGY，我根本没有代码里面找到相关的实现！也就是说，配置注释里写的非常牛逼的描述
+都是废的，这也说明了当时换成了 naive 根本没有起任何变化。</p>
+<p>OK，结合实际情况我大概搞清楚了情况，其实关键就在于 MAX_CACHE_SIZE 我设置的太大了，然后 python 那
+悲剧的性能或者说 carbon 那悲剧的缓存管理实现，导致缓存项多到一定程度时候 carbon 出现 cpu 运算的瓶颈。
+回看上面 MAX_CACHE_SIZE 配置中的注释，其实 carbon 作者也有考虑到了，无奈我比较笨拙，直到实际遭遇
+时候才醒悟过来。</p>
+<p>结合相关的监控情况，后来我将 MAX_CACHE_SIZE 设置为了 1048576 后，问题解决！</p>
+<p>实际上 MAX_CACHE_SIZE 还是应该根据具体的情况来进行设置，即每分钟会产生多少的 metric 数据项，然后
+希望 carbon 缓存多久再批量写入，两者相乘大概就有个数值了。</p>
+<p>这个事情还是让我学了不少东西。例如明明是运算上面的瓶颈，我偏偏就是执着于 IO 上面是否出现问题，从而
+导致事情的解决延迟了许久，是个人的偏执，还是视野的狭隘呢？</p>
+<hr class="docutils" />
+<p>继续来看下 USE_FLOW_CONTROL 这个配置项:</p>
+<pre class="literal-block">
+# Set this to False to drop datapoints received after the cache
+# reaches MAX_CACHE_SIZE. If this is True (the default) then sockets
+# over which metrics are received will temporarily stop accepting
+# data until the cache size falls below 95% MAX_CACHE_SIZE.
+USE_FLOW_CONTROL = True
+</pre>
+<p>默认即为 True，老实讲我也完全想不出什么情况下会选择 False。特别拿来说，主要是为了引申出 carbon 实际
+代码里的关于 event 的使用。</p>
+<p>在 carbon 里面使用的 Event 模型也是挺有趣的，通过一个基础的 event 类初始化出多个不同的 event 实例，
+需要处理的地方在初始化时候添加相关的 event handler，并保证在具体执行的时刻进行已注册的 handler 处理。
+这类处理应该是保证了在 twisted 环境下是线程安全，并实现了一个较为统一调度。</p>
+<p>下面是关于 USE_FLOW_CONTROL 的相关代码。</p>
+<div class="highlight"><pre><span class="c"># In events.py</span>
+<span class="n">cacheFull</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="nb">setattr</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="s">&#39;cacheTooFull&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">))</span>
+<span class="n">cacheSpaceAvailable</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="nb">setattr</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="s">&#39;cacheTooFull&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">))</span>
+
+<span class="c"># In service.py - function createCacheService</span>
+<span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">USE_FLOW_CONTROL</span><span class="p">:</span>
+    <span class="n">events</span><span class="o">.</span><span class="n">cacheFull</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">events</span><span class="o">.</span><span class="n">pauseReceivingMetrics</span><span class="p">)</span>
+    <span class="n">events</span><span class="o">.</span><span class="n">cacheSpaceAvailable</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">events</span><span class="o">.</span><span class="n">resumeReceivingMetrics</span><span class="p">)</span>
+
+<span class="c"># In writer.py - function optimalWriteOrder</span>
+<span class="n">CACHE_SIZE_LOW_WATERMARK</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">MAX_CACHE_SIZE</span> <span class="o">*</span> <span class="mf">0.95</span>
+
+<span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">cacheTooFull</span> <span class="ow">and</span> <span class="n">MetricCache</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="n">CACHE_SIZE_LOW_WATERMARK</span><span class="p">:</span>
+    <span class="n">events</span><span class="o">.</span><span class="n">cacheSpaceAvailable</span><span class="p">()</span>
+</pre></div>
+<p>其实看到 carbon 里面的 events 实现，很自然类比到 python 的 blinker 库。有空时候可以再记录下两种
+处理方法的异同。</p>
+<hr class="docutils" />
+<p>对于 carbon 有个东西要知道，其实在默认配置里，carbon-cache 的每个实例都会对运行情况进行记录，默认
+存放在 LOCAL_DATA_DIR 的 carbon 目录下（命名是 hostname + instance name），相关统计数据还是挺多
+的，包括 CPU 和内存使用状况，以及查询和创建的频率等。</p>
+<div class="figure">
+      <img src="/static/img/material/graphite/5E913043-carbon-instrumentation.jpg">
+      <p class="caption">
+           carbon 自身监控数据
+      </p>
+</div><p>我是比较后期才知道原来 carbon 自身已经做好了监控，这些监控信息对于我们了解 carbon 实例运行情况有
+很大的帮助。上面提到的 carbon 性能问题也是在我看了相关监控图后才醒悟过来的。</p>
+<p>继续看一下相关实现代码。</p>
+<div class="highlight"><pre><span class="c"># In instrumentation.py</span>
+<span class="k">def</span> <span class="nf">cache_record</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">CARBON_METRIC_PREFIX</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">instance</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="n">fullMetric</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">.agents.</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">HOSTNAME</span><span class="p">,</span> <span class="n">metric</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">fullMetric</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">.agents.</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">HOSTNAME</span><span class="p">,</span> <span class="n">settings</span><span class="o">.</span><span class="n">instance</span><span class="p">,</span> <span class="n">metric</span><span class="p">)</span>
+    <span class="n">datapoint</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span> <span class="n">value</span><span class="p">)</span>
+    <span class="n">cache</span><span class="o">.</span><span class="n">MetricCache</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">fullMetric</span><span class="p">,</span> <span class="n">datapoint</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">relay_record</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">CARBON_METRIC_PREFIX</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">instance</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="n">fullMetric</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">.relays.</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">HOSTNAME</span><span class="p">,</span> <span class="n">metric</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">fullMetric</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">.relays.</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">HOSTNAME</span><span class="p">,</span> <span class="n">settings</span><span class="o">.</span><span class="n">instance</span><span class="p">,</span> <span class="n">metric</span><span class="p">)</span>
+    <span class="n">datapoint</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span> <span class="n">value</span><span class="p">)</span>
+    <span class="n">events</span><span class="o">.</span><span class="n">metricGenerated</span><span class="p">(</span><span class="n">fullMetric</span><span class="p">,</span> <span class="n">datapoint</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">aggregator_record</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">CARBON_METRIC_PREFIX</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">instance</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="n">fullMetric</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">.aggregator.</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">HOSTNAME</span><span class="p">,</span> <span class="n">metric</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">fullMetric</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">.aggregator.</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">.</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">HOSTNAME</span><span class="p">,</span> <span class="n">settings</span><span class="o">.</span><span class="n">instance</span><span class="p">,</span> <span class="n">metric</span><span class="p">)</span>
+    <span class="n">datapoint</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span> <span class="n">value</span><span class="p">)</span>
+    <span class="n">events</span><span class="o">.</span><span class="n">metricGenerated</span><span class="p">(</span><span class="n">fullMetric</span><span class="p">,</span> <span class="n">datapoint</span><span class="p">)</span>
+</pre></div>
+<p>通过源码可以知道，针对不同的 carbon 实例（包括 carbon-cache, carbon-relay, carbon-aggregator）有
+相应的 record 处理函数。</p>
+<p>对于 carbon-cache 来说，就是将这些 metrix 当做正常接收的 matrix 记录，存放到 cache.MetricCache 中去，
+由程序本身的的 writedown 机制去处理啦。</p>
+<p>而因为 relay 和 aggregator 都是属于 carbon-cache 的前端代理角色，故是直接调用了 metricGenerated 这
+个事件来触发 matrix 记录，即直接将数据发到后端 carbon-cache 的 daemon 去。有一个东西顺便提一下，就是
+relay 的作用就是为 carbon 处理提供水平扩展的支持，故需要处理好相应的路由分配规则，包括一致性哈希的
+规则或专门指定的规则。下面代码可以看到相关的处理。</p>
+<div class="highlight"><pre><span class="c"># In service.py - function createRelayService</span>
+<span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">RELAY_METHOD</span> <span class="o">==</span> <span class="s">&#39;rules&#39;</span><span class="p">:</span>
+    <span class="n">router</span> <span class="o">=</span> <span class="n">RelayRulesRouter</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s">&quot;relay-rules&quot;</span><span class="p">])</span>
+<span class="k">elif</span> <span class="n">settings</span><span class="o">.</span><span class="n">RELAY_METHOD</span> <span class="o">==</span> <span class="s">&#39;consistent-hashing&#39;</span><span class="p">:</span>
+    <span class="n">router</span> <span class="o">=</span> <span class="n">ConsistentHashingRouter</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">REPLICATION_FACTOR</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">settings</span><span class="o">.</span><span class="n">RELAY_METHOD</span> <span class="o">==</span> <span class="s">&#39;aggregated-consistent-hashing&#39;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">carbon.aggregator.rules</span> <span class="kn">import</span> <span class="n">RuleManager</span>
+    <span class="n">RuleManager</span><span class="o">.</span><span class="n">read_from</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s">&quot;aggregation-rules&quot;</span><span class="p">])</span>
+    <span class="n">router</span> <span class="o">=</span> <span class="n">AggregatedConsistentHashingRouter</span><span class="p">(</span><span class="n">RuleManager</span><span class="p">,</span> <span class="n">settings</span><span class="o">.</span><span class="n">REPLICATION_FACTOR</span><span class="p">)</span>
+
+<span class="n">client_manager</span> <span class="o">=</span> <span class="n">CarbonClientManager</span><span class="p">(</span><span class="n">router</span><span class="p">)</span>
+<span class="n">client_manager</span><span class="o">.</span><span class="n">setServiceParent</span><span class="p">(</span><span class="n">root_service</span><span class="p">)</span>
+
+<span class="n">events</span><span class="o">.</span><span class="n">metricGenerated</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">client_manager</span><span class="o">.</span><span class="n">sendDatapoint</span><span class="p">)</span>
+</pre></div>
+<hr class="docutils" />
+<p>看了上面展示的相关代码，就能发现 carbon 内部是使用了一个全局的 MetricCache 变量来管理 metric 数据
+缓存。</p>
+<p>实际上，MetricCache 是一个 singleton 实例。</p>
+<p>使用 singleton 是蛮正常的，但我真正想说的是 carbon 代码里使用的一个 trick，这是我所知道在 python 里
+实现 singleton 的一个有趣方法。通过直接在 module 全局中将类实例化为一个与类名同名的 instance，然后
+这个类就消失在可见的名字空间里了，所有对该名字变量的引用都会是这个全局 instance。这个其实就是类似
+decorator 的实现原理咯。</p>
+<p>所以，在 carbon 源码中 MetricCache 既是一个类名也是一个变量名，很有趣。</p>
+<div class="highlight"><pre><span class="c"># In cache.py</span>
+<span class="k">class</span> <span class="nc">MetricCache</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lock</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
+
+    <span class="c"># ... ignore some codes of method definition of class ...</span>
+
+<span class="c"># Ghetto singleton</span>
+<span class="n">MetricCache</span> <span class="o">=</span> <span class="n">MetricCache</span><span class="p">()</span>
+</pre></div>
+<hr class="docutils" />
+<p>另外，也简单谈一下 graphite cluster 的相关东西，在上面已经提到过 carbon-relay (下面简称 relay 实例)
+支持一致性哈希或自定义规则的水平扩展机制，可以接收的数据分发到后端的 carbon-cache (下面简称 cache
+实例)。</p>
+<p>有一个事实是必须知道的，那就是 graphite 最底层用于实际存储 metric 数据的 whisper 数据库只能通过本地
+文件系统进行读写，这个是 graphite cluster 的最大局限，所有机制都是围绕这个特性来做文章的。</p>
+<p>对于接收数据来说（写），支持一致性哈希分配的 relay 实例可以优雅地处理好 metric 数据分发。在多机
+多 cache 实例的环境下，relay 实例总能正确的将 metric 数据下达到正确的 cache 实例中去，而接收到
+metric 数据的 cache 实例也能正确的将数据存储到本地文件系统的 whisper 文件。</p>
+<p>对于数据展示端来说（读），整体的事情就比较复杂了，图片和数据的生成获取是由 graphite-web (下面简称 webapp)
+处理的，因为实际数据都存放在本地 whisper 文件里，那就意味着每一个跑着 cache 实例的服务器都需要跑
+一个 webapp 实例。</p>
+<p>每一个 webapp 都要知道所有 cache 实例和 webapp 的可访问地址，这个需要我们在 webapp 配置
+中 CLUSTER_SERVERS 和 CARBONLINK_HOSTS 进行相关设置。</p>
+<p>对于 graphite cluster 中的 webapp 实例来说，当接收到一组监控数据的绘图请求的时候（往往涉及多个
+metric 数据），需要将相关的 metric 数据整合起来。针对具体某个 metric，首先查询在本地服务器是否能
+找到数据，若否再遍历访问 CLUSTER_SERVERS 中定义的 webapps 实例以确认具体数据所在服务器，直到获取到
+数据。然后再通过 CARBONLINK_HOSTS 将在该服务器上面可能缓存着的数据整合起来。最后，webapp 根据所需
+的源数据，进行最终数据生成（png图片或 json）。</p>
+<p>具体的关于 graphite cluster 行为模式的描述，可以参考 <a class="reference external" href="http://bitprophet.org/blog/2013/03/07/graphite/">这里</a> 。</p>
+<hr class="docutils" />
+<p>其实针对 graphite 的 carbon 项目，还有更多的东西可以谈，有空再一一细述咯。</p>
+<p>客观来说，carbon 基于 twisted 框架构建起来的程序逻辑，对于其中应用来说都达到了可用的效果，但在我
+看来，实质上是使很多事情变复杂了，应该有更优雅的实现。</p>
+<p>另外，模块间的依赖关系如果太复杂的话，会带来很多额外的复杂度。在 carbon 项目中就很清晰看到这种
+倾向。其实基于良好的架构去处理，应该是可以解决这类问题的，而且需要尽早处理，迟了的话，当此类代码
+分布开来的时候，就很难再回头了。</p>
+
+
+  
+  <p class="entry-tags">This entry was tagged
+    
+      <a href="/tags/graphite/">graphite</a> and 
+      <a href="/tags/python/">python</a>
+  </p>
+  
+</div>
+
+  
+    
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'thoughtatlas'; // required: replace example with your forum shortname
+    
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+
+  
+</div>
+  </div>
+
+  <footer data-offset=50>
+    <div class="container">
+      <p>© Copyright 2012 by Jason Lai. </p>
+    </div>
+  </footer>
+
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-38208289-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+</body>
+</html>
